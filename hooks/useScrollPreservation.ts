@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react"
 export function useScrollPreservation() {
   const scrollPositionRef = useRef<number>(0)
   const isUserScrollingRef = useRef<boolean>(false)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>()
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     let lastScrollTime = 0

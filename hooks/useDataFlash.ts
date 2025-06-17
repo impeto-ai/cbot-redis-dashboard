@@ -44,7 +44,7 @@ export function useDataFlash<T extends { symbol: string; ultimoPreco?: number | 
         const previousPrice = previous.ultimoPreco
 
         // Verificar se o preço mudou
-        if (currentPrice !== null && previousPrice !== null && currentPrice !== previousPrice) {
+        if (currentPrice !== null && previousPrice !== null && currentPrice !== previousPrice && typeof currentPrice === 'number' && typeof previousPrice === 'number') {
           const flashType: FlashType = currentPrice > previousPrice ? "positive" : 
                                       currentPrice < previousPrice ? "negative" : "neutral"
 

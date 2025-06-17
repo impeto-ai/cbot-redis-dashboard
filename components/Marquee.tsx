@@ -27,7 +27,7 @@ export function Marquee() {
         const valueObj = item.arrValues.find(
           (val: any) => val && typeof val === "object" && Object.keys(val)[0] === code,
         )
-        return valueObj ? Object.values(valueObj)[0] : null
+        return valueObj ? Object.values(valueObj)[0] as string : null
       }
 
       // Função para extrair dados do objeto aninhado
@@ -49,7 +49,7 @@ export function Marquee() {
       }
 
       // Processar dados da curva de dólar
-      const curvaEntries = []
+      const curvaEntries: Array<{key: string, data: any}> = []
       Object.entries(marketData).forEach(([key, value]) => {
         if (key.includes("CURVA DE DOLAR")) {
           const curvaData = value

@@ -74,8 +74,8 @@ const fetcher = async (url: string) => {
         
         console.log(`🚨 Erro criado:`, {
           message: error.message,
-          status: error.status,
-          info: error.info
+          status: (error as any).status,
+          info: (error as any).info
         })
         
         throw error
@@ -180,7 +180,7 @@ const getNextMarketChange = () => {
   }
 }
 
-const isMarketHours = () => {
+const isMarketHours = (): { isOpen: boolean; session: "noturna" | "diurna" | "fechado" } => {
   const now = new Date()
   const day = now.getDay()
   const hours = now.getHours()

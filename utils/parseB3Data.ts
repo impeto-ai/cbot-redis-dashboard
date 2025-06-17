@@ -46,9 +46,9 @@ export function parseB3Data(data: any): ParsedMarketData {
       return undefined
     }
 
-    const valueObj = data.arrValues.find((item) => item && typeof item === "object" && Object.keys(item)[0] === code)
+    const valueObj = data.arrValues.find((item: any) => item && typeof item === "object" && Object.keys(item)[0] === code)
 
-    return valueObj ? Object.values(valueObj)[0] : undefined
+    return valueObj ? Object.values(valueObj)[0] as string : undefined
   }
 
   const parseNumber = (value: string | undefined): number | null => {

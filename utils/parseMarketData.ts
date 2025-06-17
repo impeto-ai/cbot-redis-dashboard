@@ -1,51 +1,45 @@
+import { differenceInDays, parse } from "date-fns"
 import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
-import { parse, differenceInDays } from "date-fns"
 
 // Função auxiliar para garantir que temos um objeto
 function ensureObject(data: any): any {
-  // Se for string, tentar converter para objeto
+  // Se é uma string, tentar fazer parse
   if (typeof data === "string") {
     try {
       return JSON.parse(data)
     } catch (e) {
-      console.error("Erro ao converter string para objeto:", e)
-      return null
+      console.error("Erro ao fazer parse do JSON:", e)
+      return {}
     }
   }
 
-  // Se já for objeto, retornar como está
+  // Se já é um objeto, retornar como está
   if (data && typeof data === "object") {
     return data
   }
 
-  // Caso contrário, retornar null
-  return null
+  // Caso contrário, retornar objeto vazio
+  return {}
 }
 
 // Modify the parseMarketData function to handle ZM, ZL and ZW symbols
 export function parseMarketData(data: any): ParsedMarketData {
-  // Garantir que temos um objeto
+  // Primeiro, garantir que temos um objeto
   data = ensureObject(data)
 
   // Verificar se os dados estão aninhados sob uma chave
   if (data && typeof data === "object") {
     const keys = Object.keys(data)
     // Se temos apenas uma chave e ela parece ser um símbolo
-    if (
-      keys.length === 1 &&
-      (keys[0].includes("ZS") ||
-        keys[0].includes("ZC") ||
-        keys[0].includes("ZM") ||
-        keys[0].includes("ZL") ||
-        keys[0].includes("ZW"))
-    ) {
+    if (keys.length === 1 && keys[0].match(/^(ZS|ZC|ZW|ZM|ZL)/)) {
+      console.log("Extraindo dados aninhados sob a chave:", keys[0])
       data = data[keys[0]]
     }
   }
 
   if (!data || !data.symbolId || !data.arrValues || !Array.isArray(data.arrValues)) {
-    console.error("Invalid market data structure:", typeof data === "object" ? JSON.stringify(data) : typeof data)
-    throw new Error("Invalid market data structure")
+    console.error("Invalid data structure:", typeof data === "object" ? JSON.stringify(data) : typeof data)
+    throw new Error("Invalid data structure")
   }
 
   const getValue = (code: string): string | undefined => {
@@ -54,9 +48,9 @@ export function parseMarketData(data: any): ParsedMarketData {
       return undefined
     }
 
-    const valueObj = data.arrValues.find((item) => item && typeof item === "object" && Object.keys(item)[0] === code)
+    const valueObj = data.arrValues.find((item: any) => item && typeof item === "object" && Object.keys(item)[0] === code)
 
-    return valueObj ? Object.values(valueObj)[0] : undefined
+    return valueObj ? Object.values(valueObj)[0] as string : undefined
   }
 
   const parseNumber = (value: string | undefined): number | null => {
@@ -148,9 +142,9 @@ export function parseCurvaData(data: any): ParsedCurvaData {
       return undefined
     }
 
-    const valueObj = data.arrValues.find((item) => item && typeof item === "object" && Object.keys(item)[0] === code)
+    const valueObj = data.arrValues.find((item: any) => item && typeof item === "object" && Object.keys(item)[0] === code)
 
-    return valueObj ? Object.values(valueObj)[0] : undefined
+    return valueObj ? Object.values(valueObj)[0] as string : undefined
   }
 
   // Códigos atualizados para a curva de dólar
@@ -203,9 +197,9 @@ export function parseB3Data(data: any): ParsedMarketData {
       return undefined
     }
 
-    const valueObj = data.arrValues.find((item) => item && typeof item === "object" && Object.keys(item)[0] === code)
+    const valueObj = data.arrValues.find((item: any) => item && typeof item === "object" && Object.keys(item)[0] === code)
 
-    return valueObj ? Object.values(valueObj)[0] : undefined
+    return valueObj ? Object.values(valueObj)[0] as string : undefined
   }
 
   const parseNumber = (value: string | undefined): number | null => {
@@ -252,7 +246,7 @@ export function parseB3Data(data: any): ParsedMarketData {
 }
 
 function getMesNome(mes: string): string {
-  const meses: { [key: string]: string } = {
+  const meses: Record<string, string> = {
     "01": "JAN",
     "02": "FEV",
     "03": "MAR",
@@ -266,6 +260,6 @@ function getMesNome(mes: string): string {
     "11": "NOV",
     "12": "DEZ",
   }
-  return meses[mes] || mes
+  return meses[mes] || "UNK"
 }
 

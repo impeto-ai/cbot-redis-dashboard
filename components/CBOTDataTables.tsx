@@ -10,7 +10,17 @@ interface CBOTDataTablesProps {
 }
 
 // Componente memoizado com efeitos visuais aprimorados
-const MemoizedTableRow = React.memo(({ item, formatNumber, formatPercentage, formatLastUpdate, getMaturityClass, getVariationClass, flashClass }) => {
+interface MemoizedTableRowProps {
+  item: ParsedMarketData
+  formatNumber: (value: number | null | undefined, decimals?: number) => string
+  formatPercentage: (value: number | null | undefined) => string
+  formatLastUpdate: (lastUpdate: string | undefined) => string
+  getMaturityClass: (days: number) => string
+  getVariationClass: (variation: number | null | undefined) => string
+  flashClass: string
+}
+
+const MemoizedTableRow = React.memo(({ item, formatNumber, formatPercentage, formatLastUpdate, getMaturityClass, getVariationClass, flashClass }: MemoizedTableRowProps) => {
   const isPctPositive = (item.variacao || 0) >= 0
   const isDiffPositive = (item.diff || 0) >= 0
   const pctColor = isPctPositive ? "text-[#00ff00] value-highlight" : "text-[#ff4444] value-highlight"

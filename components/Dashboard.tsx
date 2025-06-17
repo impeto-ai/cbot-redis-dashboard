@@ -17,19 +17,20 @@ import React from "react"
 import { MarketDataTable } from "@/components/MarketDataTable"
 import { parseB3Data } from "@/utils/parseB3Data"
 import { CBOTDataTables } from "@/components/CBOTDataTables"
+import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
 
 export default function Dashboard() {
   const { data: marketData, error, isLoading, initialDataFetched, marketStatus, isPageVisible } = useMarketData()
   const { preserveScroll, isUserScrolling } = useScrollPreservation()
 
-  const [parsedSoybeanData, setParsedSoybeanData] = useState([])
-  const [parsedCornData, setParsedCornData] = useState([])
-  const [parsedCurvaData, setParsedCurvaData] = useState([])
-  const [parsedMealData, setParsedMealData] = useState([])
-  const [parsedOilData, setParsedOilData] = useState([])
-  const [parsedWheatData, setParsedWheatData] = useState([])
+  const [parsedSoybeanData, setParsedSoybeanData] = useState<ParsedMarketData[]>([])
+  const [parsedCornData, setParsedCornData] = useState<ParsedMarketData[]>([])
+  const [parsedCurvaData, setParsedCurvaData] = useState<ParsedCurvaData[]>([])
+  const [parsedMealData, setParsedMealData] = useState<ParsedMarketData[]>([])
+  const [parsedOilData, setParsedOilData] = useState<ParsedMarketData[]>([])
+  const [parsedWheatData, setParsedWheatData] = useState<ParsedMarketData[]>([])
   // Adicione o estado para os dados da B3
-  const [parsedB3Data, setParsedB3Data] = useState([])
+  const [parsedB3Data, setParsedB3Data] = useState<ParsedMarketData[]>([])
   // Adicione "bmf" na lista de tabelas visíveis por padrão
   const [visibleTables, setVisibleTables] = useState<string[]>(["soybean", "corn", "meal", "oil", "bmf", "dollar"])
   const [tableLayout, setTableLayout] = useState<"horizontal" | "vertical">("vertical")

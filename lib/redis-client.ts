@@ -1,7 +1,8 @@
-import { mockData } from "./mockData"
-
 // Função para esperar um tempo específico
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// Mock data simples para desenvolvimento
+const mockData: Record<string, any> = {}
 
 // Cache para armazenar resultados e evitar requisições repetidas
 const cache: Record<string, { data: any; timestamp: number }> = {}
@@ -50,7 +51,7 @@ export class RedisClient {
             return { result: Object.keys(mockData) }
           } else if (endpoint.includes("get")) {
             const key = endpoint.split("/").pop()
-            return { result: mockData[key] || null }
+            return { result: key ? mockData[key] || null : null }
           }
           return { result: null }
         }

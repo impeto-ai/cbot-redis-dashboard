@@ -345,7 +345,7 @@ async function getAllValuesInternal(): Promise<Record<string, any>> {
         console.error(`Erro ao buscar valor para ${key}:`, error)
 
         // Se for erro de circuit breaker, parar o processamento
-        if (error.message === "Circuit breaker ativo") {
+        if (error instanceof Error && error.message === "Circuit breaker ativo") {
           console.log("Circuit breaker ativado, interrompendo processamento")
           break
         }

@@ -34,7 +34,13 @@ interface MarketDataTableProps {
 }
 
 // Adicionar esta função no início do arquivo
-const MemoizedTableRow = React.memo(({ item, formatNumber, formatHora }) => {
+interface MemoizedTableRowProps {
+  item: ParsedCurvaDataWithUpdate
+  formatNumber: (value: number | null | undefined, decimals?: number) => string
+  formatHora: (datetime: string) => string
+}
+
+const MemoizedTableRow = React.memo(({ item, formatNumber, formatHora }: MemoizedTableRowProps) => {
   return (
     <tr key={item.curva} className="border-b border-gray-800 hover:bg-[#1a1f2e] no-flash">
       <td className="px-2 py-1 text-[#ffff00] whitespace-nowrap data-cell">{item.curva}</td>

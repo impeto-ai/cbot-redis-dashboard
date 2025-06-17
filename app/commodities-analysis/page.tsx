@@ -12,11 +12,12 @@ import Link from "next/link"
 import { useMarketData } from "@/hooks/useMarketData"
 import { parseMarketData } from "@/utils/parseMarketData"
 import { LoadingScreen } from "@/components/LoadingScreen"
+import type { ParsedMarketData } from "@/types/market-data"
 
 export default function CommoditiesAnalysis() {
   const { data: marketData, error, isLoading, initialDataFetched } = useMarketData()
-  const [mealData, setMealData] = useState([])
-  const [oilData, setOilData] = useState([])
+  const [mealData, setMealData] = useState<ParsedMarketData[]>([])
+  const [oilData, setOilData] = useState<ParsedMarketData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export default function CommoditiesAnalysis() {
     }
   }
 
-  const renderTable = (tableData, title) => (
+  const renderTable = (tableData: ParsedMarketData[], title: string) => (
     <div className="mb-4">
       <div className="bg-gradient-to-r from-[#004d40] to-[#00695c] px-2 py-1">
         <h2 className="text-[#00ff00] font-bold text-xs">{title}</h2>
@@ -114,7 +115,7 @@ export default function CommoditiesAnalysis() {
           </thead>
           <tbody className="font-mono">
             {tableData.length > 0 ? (
-              tableData.map((item) => {
+              tableData.map((item: ParsedMarketData) => {
                 const isPctPositive = (item.variacao || 0) >= 0
                 const isDiffPositive = (item.diff || 0) >= 0
                 const pctColor = isPctPositive ? "text-[#00ff00]" : "text-[#ff4444]"

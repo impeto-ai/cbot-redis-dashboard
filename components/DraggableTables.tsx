@@ -248,7 +248,7 @@ export function DraggableTables({
     setTables(initialTables)
 
     // Update layout reference
-    initialTables.forEach((table) => {
+    initialTables.forEach((table: TableConfig) => {
       layoutRef.current[table.id] = {
         layout: table.layout,
         pairedWith: table.pairedWith,
@@ -296,7 +296,7 @@ export function DraggableTables({
                 }
 
                 // Find and update the paired table in our new array
-                const pairedIndex = prev.findIndex((t) => t.id === table.pairedWith)
+                const pairedIndex = prev.findIndex((t: TableConfig) => t.id === table.pairedWith)
                 if (pairedIndex !== -1) {
                   prev[pairedIndex] = {
                     ...prev[pairedIndex],
@@ -468,7 +468,7 @@ export function DraggableTables({
       if (table.pairedWith) {
         console.log("Unpair tables:", table.id, "and", table.pairedWith)
 
-        const pairedIndex = newTables.findIndex((t) => t.id === table.pairedWith)
+        const pairedIndex = newTables.findIndex((t: TableConfig) => t.id === table.pairedWith)
         if (pairedIndex !== -1) {
           newTables[pairedIndex] = {
             ...newTables[pairedIndex],
@@ -485,7 +485,7 @@ export function DraggableTables({
       } else {
         // Find next unpaired table to pair with
         const nextUnpairedIndex = newTables.findIndex(
-          (t, i) => i > tableIndex && t.visible && t.layout === "vertical" && !t.pairedWith,
+          (t: TableConfig, i: number) => i > tableIndex && t.visible && t.layout === "vertical" && !t.pairedWith,
         )
 
         if (nextUnpairedIndex !== -1) {
