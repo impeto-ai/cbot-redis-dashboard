@@ -1,0 +1,401 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent scroll jumping and UI flickers during updates */
+html {
+  scroll-behavior: auto !important;
+}
+
+/* Optimize rendering performance and reduce reflows */
+.data-cell {
+  contain: layout style;
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+.no-flash {
+  contain: layout;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* Stabilize layout during updates */
+.stable-layout {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Efeito de pulsação sutil para toda a interface */
+.interface-glow {
+  background: radial-gradient(ellipse at center, rgba(64, 196, 255, 0.02), transparent 70%);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .glow-positive,
+  .glow-negative,
+  .maturity-urgent,
+  .maturity-warning,
+  .maturity-attention,
+  .maturity-moderate,
+  .data-shimmer {
+    animation: none !important;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes glow-positive {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 255, 0, 0.1);
+    background: linear-gradient(90deg, rgba(0, 255, 0, 0.05), rgba(0, 255, 0, 0.15), rgba(0, 255, 0, 0.05));
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.6), inset 0 0 20px rgba(0, 255, 0, 0.2);
+    background: linear-gradient(90deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.25), rgba(0, 255, 0, 0.1));
+  }
+}
+
+@keyframes glow-negative {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 68, 68, 0.3), inset 0 0 10px rgba(255, 68, 68, 0.1);
+    background: linear-gradient(90deg, rgba(255, 68, 68, 0.05), rgba(255, 68, 68, 0.15), rgba(255, 68, 68, 0.05));
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.6), inset 0 0 20px rgba(255, 68, 68, 0.2);
+    background: linear-gradient(90deg, rgba(255, 68, 68, 0.1), rgba(255, 68, 68, 0.25), rgba(255, 68, 68, 0.1));
+  }
+}
+
+@keyframes maturity-glow-urgent {
+  0%, 100% {
+    box-shadow: inset 0 0 3px rgba(255, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 8px rgba(255, 0, 0, 0.6);
+  }
+}
+
+@keyframes maturity-glow-warning {
+  0%, 100% {
+    box-shadow: inset 0 0 3px rgba(255, 165, 0, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 8px rgba(255, 165, 0, 0.6);
+  }
+}
+
+@keyframes maturity-glow-attention {
+  0%, 100% {
+    box-shadow: inset 0 0 2px rgba(255, 255, 0, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 6px rgba(255, 255, 0, 0.6);
+  }
+}
+
+@keyframes maturity-glow-moderate {
+  0%, 100% {
+    box-shadow: inset 0 0 2px rgba(0, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.5);
+  }
+}
+
+@keyframes data-shine {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes glow-positive-subtle {
+  0%, 100% {
+    text-shadow: 0 0 3px rgba(0, 255, 0, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.8), 0 0 12px rgba(0, 255, 0, 0.4);
+  }
+}
+
+@keyframes glow-negative-subtle {
+  0%, 100% {
+    text-shadow: 0 0 3px rgba(255, 68, 68, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 8px rgba(255, 68, 68, 0.8), 0 0 12px rgba(255, 68, 68, 0.4);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-black text-foreground;
+    font-family: "Consolas", "Monaco", monospace;
+  }
+
+  .table-row-hover {
+    @apply transition-colors duration-100;
+  }
+
+  .table-row-hover:hover {
+    @apply bg-[#1a1f2e];
+  }
+
+  /* Garantir que os botões sejam clicáveis */
+  button {
+    @apply relative z-50;
+  }
+}
+
+@layer utilities {
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  /* Animações de brilho para variações de preço */
+  .glow-positive {
+    animation: glow-positive 3s ease-in-out infinite;
+  }
+
+  .glow-negative {
+    animation: glow-negative 3s ease-in-out infinite;
+  }
+
+  /* Versões mais sutis para melhor contraste */
+  .glow-positive-subtle {
+    animation: glow-positive-subtle 3s ease-in-out infinite;
+  }
+
+  .glow-negative-subtle {
+    animation: glow-negative-subtle 3s ease-in-out infinite;
+  }
+
+  /* Animações de brilho para prazos de vencimento */
+  .maturity-urgent {
+    animation: maturity-glow-urgent 1.5s ease-in-out infinite;
+  }
+
+  .maturity-warning {
+    animation: maturity-glow-warning 2s ease-in-out infinite;
+  }
+
+  .maturity-attention {
+    animation: maturity-glow-attention 2.5s ease-in-out infinite;
+  }
+
+  .maturity-moderate {
+    animation: maturity-glow-moderate 3s ease-in-out infinite;
+  }
+
+  .maturity-stable {
+    background: linear-gradient(45deg, rgba(100, 100, 100, 0.05), rgba(150, 150, 150, 0.05));
+  }
+
+  /* Efeito shimmer para dados que estão atualizando */
+  .data-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: data-shine 2s ease-in-out infinite;
+  }
+
+  /* Melhoria no brilho geral da tabela */
+  .table-glow {
+    box-shadow: 0 0 20px rgba(64, 196, 255, 0.1);
+    border: 1px solid rgba(64, 196, 255, 0.2);
+  }
+
+  /* Brilho para valores importantes */
+  .value-highlight {
+    text-shadow: 0 0 8px currentColor;
+    font-weight: 600;
+  }
+
+  .symbol-glow {
+    text-shadow: 0 0 10px rgba(64, 196, 255, 0.8);
+  }
+
+  .price-glow {
+    text-shadow: 0 0 8px rgba(255, 255, 100, 0.6);
+  }
+
+  /* Transições mais suaves e estáveis para atualizações de dados */
+  .data-transition {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .data-cell-transition {
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  /* Prevenir mudanças bruscas de layout */
+  .layout-stable {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .cursor-grab {
+    cursor: grab;
+  }
+
+  .cursor-grabbing {
+    cursor: grabbing;
+  }
+
+  .data-update {
+    animation: subtle-highlight 1.5s ease-out;
+  }
+
+  /* Garantir que os botões sejam clicáveis */
+  .clickable {
+    position: relative;
+    z-index: 50;
+    pointer-events: auto !important;
+  }
+
+  /* Adicionar estas classes para transições suaves */
+  .smooth-update {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .data-cell {
+    transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, text-shadow 0.15s ease;
+  }
+
+  /* Hover effects para células */
+  .data-cell:hover {
+    background-color: rgba(64, 196, 255, 0.1) !important;
+    text-shadow: 0 0 5px currentColor;
+    transform: scale(1.02);
+  }
+
+  /* Efeitos para melhorar a visibilidade dos dados */
+  .enhanced-glow {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  /* Animação para linhas da tabela */
+  .table-row {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(90deg, rgba(64, 196, 255, 0.1), rgba(64, 196, 255, 0.05), rgba(64, 196, 255, 0.1)) !important;
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(64, 196, 255, 0.2);
+  }
+
+  /* Melhoria no contraste para melhor leitura */
+  .high-contrast {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .table-fade-in {
+    animation: tableAppear 0.3s ease-in-out;
+  }
+
+  .no-flash {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes subtle-highlight {
+  0% {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes tableAppear {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
