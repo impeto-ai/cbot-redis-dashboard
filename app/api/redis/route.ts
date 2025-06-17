@@ -58,16 +58,20 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data, timestamp: Date.now() }, { headers })
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    const errorName = error instanceof Error ? error.name : 'Unknown'
+    
     console.error("Erro detalhado na API:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
+      message: errorMessage,
+      stack: errorStack,
+      name: errorName,
       timestamp: new Date().toISOString()
     })
     
     return NextResponse.json({ 
       error: "Failed to fetch data", 
-      details: error.message,
+      details: errorMessage,
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
