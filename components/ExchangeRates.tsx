@@ -112,7 +112,7 @@ export const ExchangeRates = React.memo(function ExchangeRates({ data }: Exchang
     return (
       <div className="mb-0.5 no-flash">
         <div className={`px-2 py-1 bg-gradient-to-r from-[#9a9a00] via-[#b8b800] to-[#9a9a00] shadow-lg`}>
-          <h2 className="text-black font-bold text-xs sm:text-sm md:text-base text-center tracking-wide" style={{ textShadow: '0 0 10px rgba(0,0,0,0.5)' }}>{title}</h2>
+          <h2 className="text-black font-bold text-xs sm:text-sm md:text-base text-center tracking-wide">{title}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs sm:text-sm md:text-base table-glow">

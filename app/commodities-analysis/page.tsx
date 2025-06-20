@@ -128,12 +128,12 @@ export default function CommoditiesAnalysis() {
                       {formatNumber(item.ultimoPreco)}
                     </td>
                     <td
-                      className={`px-2 py-1 text-right ${pctColor} animate-[blink_2s_ease-in-out_infinite] whitespace-nowrap`}
+                      className={`px-2 py-1 text-right ${pctColor} animate-[blink_4s_ease-in-out_infinite] whitespace-nowrap`}
                     >
                       {formatPercentage(item.variacao)}
                     </td>
                     <td
-                      className={`px-2 py-1 text-right ${diffColor} animate-[blink_2s_ease-in-out_infinite] whitespace-nowrap`}
+                      className={`px-2 py-1 text-right ${diffColor} animate-[blink_4s_ease-in-out_infinite] whitespace-nowrap`}
                     >
                       {formatNumber(item.diff)}
                     </td>

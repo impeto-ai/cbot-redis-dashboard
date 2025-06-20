@@ -182,7 +182,7 @@ export function Marquee() {
             <span
               key={index}
               className={`mx-6 text-sm font-bold ${item.color} ${
-                item.isBlinking ? "animate-[blink_2s_ease-in-out_infinite]" : ""
+                item.isBlinking ? "animate-[blink_4s_ease-in-out_infinite]" : ""
               }`}
             >
               {item.text}
@@ -198,7 +198,7 @@ export function Marquee() {
             <span
               key={index}
               className={`mx-6 text-sm font-bold ${item.color} ${
-                item.isBlinking ? "animate-[blink_2s_ease-in-out_infinite]" : ""
+                item.isBlinking ? "animate-[blink_4s_ease-in-out_infinite]" : ""
               }`}
             >
               {item.text}

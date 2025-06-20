@@ -172,7 +172,7 @@ export function PTAXChart() {
             <div className="text-[#00ff00]">
               PTAX Média: {ptaxMedia?.toFixed(4) ?? "-"}
               <span
-                className={`ml-2 ${variacao && variacao >= 0 ? "text-[#00ff00]" : "text-[#ff4444]"} animate-[blink_2s_ease-in-out_infinite]`}
+                className={`ml-2 ${variacao && variacao >= 0 ? "text-[#00ff00]" : "text-[#ff4444]"} animate-[blink_4s_ease-in-out_infinite]`}
               >
                 {variacao !== null ? (variacao >= 0 ? "+" : "") + variacao.toFixed(4) : "-"}
               </span>

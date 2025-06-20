@@ -16,7 +16,7 @@ export function Header() {
           height={40}
         />
         <div
-          className={`w-2 h-2 rounded-full ${marketStatus.status === "open" ? "bg-green-500" : "bg-red-500"} animate-[blink_1s_ease-in-out_infinite] my-auto ml-2`}
+          className={`w-2 h-2 rounded-full ${marketStatus.status === "open" ? "bg-green-500" : "bg-red-500"} animate-[blink_3s_ease-in-out_infinite] my-auto ml-2`}
         />
       </div>
       <div className="flex items-center gap-4">

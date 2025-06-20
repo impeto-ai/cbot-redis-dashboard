@@ -18,7 +18,7 @@ html {
   contain: layout;
   transform: translateZ(0);
   backface-visibility: hidden;
-  -webkit-font-smoothing: subpixel-antialiased;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Stabilize layout during updates */
@@ -60,10 +60,21 @@ html {
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.85;
   }
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.005);
   }
 }
 
@@ -145,19 +156,19 @@ html {
 
 @keyframes glow-positive-subtle {
   0%, 100% {
-    text-shadow: 0 0 3px rgba(0, 255, 0, 0.4);
+    text-shadow: none;
   }
   50% {
-    text-shadow: 0 0 8px rgba(0, 255, 0, 0.8), 0 0 12px rgba(0, 255, 0, 0.4);
+    text-shadow: none;
   }
 }
 
 @keyframes glow-negative-subtle {
   0%, 100% {
-    text-shadow: 0 0 3px rgba(255, 68, 68, 0.4);
+    text-shadow: none;
   }
   50% {
-    text-shadow: 0 0 8px rgba(255, 68, 68, 0.8), 0 0 12px rgba(255, 68, 68, 0.4);
+    text-shadow: none;
   }
 }
 
@@ -215,28 +226,28 @@ html {
 
   /* Versões mais sutis para melhor contraste */
   .glow-positive-subtle {
-    animation: glow-positive-subtle 3s ease-in-out infinite;
+    animation: glow-positive-subtle 5s ease-in-out infinite;
   }
 
   .glow-negative-subtle {
-    animation: glow-negative-subtle 3s ease-in-out infinite;
+    animation: glow-negative-subtle 5s ease-in-out infinite;
   }
 
   /* Animações de brilho para prazos de vencimento */
   .maturity-urgent {
-    animation: maturity-glow-urgent 1.5s ease-in-out infinite;
+    animation: maturity-glow-urgent 3s ease-in-out infinite;
   }
 
   .maturity-warning {
-    animation: maturity-glow-warning 2s ease-in-out infinite;
+    animation: maturity-glow-warning 4s ease-in-out infinite;
   }
 
   .maturity-attention {
-    animation: maturity-glow-attention 2.5s ease-in-out infinite;
+    animation: maturity-glow-attention 5s ease-in-out infinite;
   }
 
   .maturity-moderate {
-    animation: maturity-glow-moderate 3s ease-in-out infinite;
+    animation: maturity-glow-moderate 6s ease-in-out infinite;
   }
 
   .maturity-stable {
@@ -255,6 +266,11 @@ html {
     animation: data-shine 2s ease-in-out infinite;
   }
 
+  /* Animação mais suave para valores importantes */
+  .gentle-pulse {
+    animation: gentle-pulse 4s ease-in-out infinite;
+  }
+
   /* Melhoria no brilho geral da tabela */
   .table-glow {
     box-shadow: 0 0 20px rgba(64, 196, 255, 0.1);
@@ -263,16 +279,16 @@ html {
 
   /* Brilho para valores importantes */
   .value-highlight {
-    text-shadow: 0 0 8px currentColor;
+    text-shadow: none;
     font-weight: 600;
   }
 
   .symbol-glow {
-    text-shadow: 0 0 10px rgba(64, 196, 255, 0.8);
+    text-shadow: none;
   }
 
   .price-glow {
-    text-shadow: 0 0 8px rgba(255, 255, 100, 0.6);
+    text-shadow: none;
   }
 
   /* Transições mais suaves e estáveis para atualizações de dados */
@@ -320,19 +336,19 @@ html {
   }
 
   .data-cell {
-    transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, text-shadow 0.15s ease;
+    transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   /* Hover effects para células */
   .data-cell:hover {
     background-color: rgba(64, 196, 255, 0.1) !important;
-    text-shadow: 0 0 5px currentColor;
-    transform: scale(1.02);
+    text-shadow: none;
+    transform: scale(1.01);
   }
 
   /* Efeitos para melhorar a visibilidade dos dados */
   .enhanced-glow {
-    filter: drop-shadow(0 0 8px currentColor);
+    filter: none;
   }
 
   /* Animação para linhas da tabela */
@@ -348,7 +364,7 @@ html {
 
   /* Melhoria no contraste para melhor leitura */
   .high-contrast {
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: none;
   }
 
   .table-fade-in {

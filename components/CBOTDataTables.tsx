@@ -128,9 +128,7 @@ export const CBOTDataTables = React.memo(function CBOTDataTables({ data, title }
       >
         <h2
           className={`${tableTitle === "MILHO BM&F" ? "text-black" : "text-white"} font-bold text-xs sm:text-sm md:text-base text-center tracking-wide`}
-          style={{
-            textShadow: tableTitle === "MILHO BM&F" ? "0 0 10px rgba(0,0,0,0.5)" : "0 0 10px rgba(255,255,255,0.3)"
-          }}
+          style={{}}
         >
           {tableTitle}
         </h2>
