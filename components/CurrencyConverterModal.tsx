@@ -253,7 +253,7 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           Conversor de Moeda
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700">
+      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             <Calculator className="w-5 h-5 text-yellow-400" />
@@ -262,19 +262,33 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={mode} onValueChange={(value: any) => setMode(value)} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800">
-            <TabsTrigger value="convert" className="data-[state=active]:bg-yellow-600 data-[state=active]:text-black">
+        <Tabs 
+          value={mode} 
+          onValueChange={(value: any) => setMode(value)} 
+          className="w-full relative"
+        >
+          <TabsList className="grid w-full grid-cols-2 bg-slate-800 mb-4 relative z-10">
+            <TabsTrigger 
+              value="convert" 
+              className="data-[state=active]:bg-yellow-600 data-[state=active]:text-black relative z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Calculator className="w-4 h-4 mr-2" />
-              Converter
+              <span className="hidden sm:inline">Converter</span>
+              <span className="sm:hidden">Convert</span>
             </TabsTrigger>
-            <TabsTrigger value="date" className="data-[state=active]:bg-yellow-600 data-[state=active]:text-black">
+            <TabsTrigger 
+              value="date" 
+              className="data-[state=active]:bg-yellow-600 data-[state=active]:text-black relative z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Calendar className="w-4 h-4 mr-2" />
-              Por Data
+              <span className="hidden sm:inline">Por Data</span>
+              <span className="sm:hidden">Data</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="convert" className="space-y-4 mt-4">
+          <TabsContent value="convert" className="space-y-4 relative z-0 overflow-hidden">
           {/* Valor de entrada */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">
@@ -296,10 +310,13 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
               Curva de Dólar
             </label>
             <Select value={selectedCurva} onValueChange={setSelectedCurva}>
-              <SelectTrigger className="bg-slate-800 border-slate-600 text-white focus:border-yellow-400">
+              <SelectTrigger 
+                className="bg-slate-800 border-slate-600 text-white focus:border-yellow-400"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <SelectValue placeholder="Selecione uma curva" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600 max-h-48">
+              <SelectContent className="bg-slate-800 border-slate-600 max-h-48 z-50">
                 {sortedCurvaData.map((item) => (
                   <SelectItem 
                     key={item.curva} 
@@ -367,7 +384,7 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           )}
           </TabsContent>
 
-          <TabsContent value="date" className="space-y-4 mt-4">
+          <TabsContent value="date" className="space-y-4 relative z-0 overflow-hidden">
             <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
               <h4 className="text-sm font-medium text-blue-300 mb-2 flex items-center gap-2">
                 <Zap className="w-4 h-4" />
@@ -390,21 +407,17 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
                   onChange={(e) => setTargetDate(e.target.value)}
                   min={minDate}
                   max={maxDate}
-                  className="bg-slate-800 border-slate-600 text-white focus:border-yellow-400 pr-10
+                  className="bg-slate-800 border-slate-600 text-white focus:border-yellow-400 pr-8
                     [&::-webkit-calendar-picker-indicator]:filter 
                     [&::-webkit-calendar-picker-indicator]:invert 
-                    [&::-webkit-calendar-picker-indicator]:brightness-200 
-                    [&::-webkit-calendar-picker-indicator]:contrast-200 
-                    [&::-webkit-calendar-picker-indicator]:cursor-pointer 
-                    [&::-webkit-calendar-picker-indicator]:opacity-100
-                    [&::-webkit-calendar-picker-indicator]:w-5
-                    [&::-webkit-calendar-picker-indicator]:h-5"
+                    [&::-webkit-calendar-picker-indicator]:opacity-70
+                    [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   placeholder="dd/mm/aaaa"
-                  title="Clique para abrir o calendário"
+                  title="Selecionar data"
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                 />
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <Calendar className="w-4 h-4 text-yellow-400" />
-                </div>
+                <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-yellow-400 pointer-events-none opacity-60" />
               </div>
               <p className="text-xs text-gray-400 flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
