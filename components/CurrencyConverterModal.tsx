@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calculator, ArrowLeftRight, TrendingUp, DollarSign, Calendar, Zap } from "lucide-react"
+import { Calculator, ArrowLeftRight, TrendingUp, DollarSign, Calendar, Zap, X } from "lucide-react"
 import type { ParsedCurvaData } from "@/types/market-data"
 
 interface CurrencyConverterModalProps {
@@ -253,10 +253,18 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           Conversor de Moeda
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto [&>[data-dialog-close]]:hidden">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <Calculator className="w-5 h-5 text-yellow-400" />
+          <DialogTitle className="flex items-center gap-2 text-white relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+              className="absolute -left-2 -top-1 w-8 h-8 p-0 hover:bg-slate-800 text-gray-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <Calculator className="w-5 h-5 text-yellow-400 ml-8" />
             Consulta de Câmbio
             <TrendingUp className="w-4 h-4 text-green-400 ml-auto" />
           </DialogTitle>
