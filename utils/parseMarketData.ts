@@ -1,5 +1,6 @@
 import { differenceInDays, parse } from "date-fns"
 import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
+import { calculateMaturityDate } from "@/utils/dateUtils"
 
 // Função auxiliar para garantir que temos um objeto
 function ensureObject(data: any): any {
@@ -95,7 +96,7 @@ export function parseMarketData(data: any): ParsedMarketData {
 
   return {
     symbol: data.symbolId?.symbol || "Unknown",
-    vencimento: `${produto} - ${mesNome}/${ano}`,
+    vencimento: `${mesNome}/${ano}`, // Removido o nome do produto, apenas vencimento
     variacao: parseNumber(getValue("01")),
     pct: parseNumber(getValue("1")), // Novo campo PCT
     maximo: parseNumber(getValue("16")),
@@ -168,6 +169,7 @@ export function parseCurvaData(data: any): ParsedCurvaData {
     var: cleanNumber(variacao),
     datetime: `${data_ref}${hora ? " " + hora : ""}`.trim(),
     lastUpdate: data.lastUpdate || new Date().toISOString(), // Usar o lastUpdate do objeto de dados
+    dataVencimento: calculateMaturityDate(data.symbolId?.symbol || "Unknown"), // Adicionar data de vencimento
   }
 }
 
@@ -230,7 +232,7 @@ export function parseB3Data(data: any): ParsedMarketData {
 
   return {
     symbol: data.symbolId?.symbol || "Unknown",
-    vencimento: `BM&F - ${mesNome}/${ano}`,
+    vencimento: `${mesNome}/${ano}`, // Removido "BM&F -", apenas vencimento
     variacao: parseNumber(getValue("01")),
     pct: parseNumber(getValue("01")), // Variação percentual
     maximo: parseNumber(getValue("16")),

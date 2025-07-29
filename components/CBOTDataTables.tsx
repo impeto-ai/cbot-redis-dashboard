@@ -30,6 +30,7 @@ const MemoizedTableRow = React.memo(({ item, formatNumber, formatPercentage, for
   return (
     <tr key={item.symbol} className={`border-b border-gray-800 table-row no-flash stable-layout ${flashClass}`}>
       <td className="px-2 py-1 text-left text-[#40c4ff] whitespace-nowrap data-cell symbol-glow">{item.symbol}</td>
+      <td className="px-2 py-1 text-center text-white whitespace-nowrap data-cell">{item.vencimento}</td>
       <td className="px-2 py-1 text-right text-yellow-400 whitespace-nowrap font-bold data-cell price-glow">
         {formatNumber(item.ultimoPreco)}
       </td>
@@ -52,7 +53,6 @@ const MemoizedTableRow = React.memo(({ item, formatNumber, formatPercentage, for
       <td className="px-2 py-1 text-right text-[#40c4ff] whitespace-nowrap hidden sm:table-cell data-cell">
         {formatNumber(item.ajuste)}
       </td>
-      <td className="px-2 py-1 text-center text-white whitespace-nowrap data-cell">{item.vencimento}</td>
       <td
         className={`px-2 py-1 text-right whitespace-nowrap text-gray-300 ${getMaturityClass(item.diasAteVencimento)} data-cell`}
       >
@@ -135,22 +135,23 @@ export const CBOTDataTables = React.memo(function CBOTDataTables({ data, title }
       </div>
       <table className="w-full border-collapse text-xs sm:text-sm md:text-base table-glow">
         <colgroup>
-          <col className="w-[7%]" />
-          <col className="w-[7%]" />
-          <col className="w-[6%]" />
-          <col className="w-[6%]" />
-          <col className="w-[7%]" />
-          <col className="w-[7%]" />
-          <col className="w-[7%]" />
-          <col className="w-[7%]" />
-          <col className="w-[7%]" />
-          <col className="w-[18%]" />
           <col className="w-[8%]" />
           <col className="w-[8%]" />
+          <col className="w-[7%]" />
+          <col className="w-[7%]" />
+          <col className="w-[7%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[15%]" />
         </colgroup>
         <thead>
           <tr className="bg-gradient-to-r from-[#1a1f2e] via-[#242938] to-[#1a1f2e] border-b border-[#40c4ff]/30">
             <th className="text-left px-2 py-1 text-[#40c4ff] font-semibold whitespace-nowrap tracking-wide">ATIVO</th>
+            <th className="text-center px-2 py-1 text-white font-semibold whitespace-nowrap tracking-wide">DESCR</th>
             <th className="text-right px-2 py-1 text-[#ffd700] font-semibold whitespace-nowrap tracking-wide">ULT</th>
             <th className="text-right px-2 py-1 text-[#00ff00] font-semibold whitespace-nowrap tracking-wide">PCT</th>
             <th className="text-right px-2 py-1 text-[#ff6b6b] font-semibold whitespace-nowrap tracking-wide">DIF</th>
@@ -169,7 +170,6 @@ export const CBOTDataTables = React.memo(function CBOTDataTables({ data, title }
             <th className="text-right px-2 py-1 text-white/80 font-semibold whitespace-nowrap hidden sm:table-cell tracking-wide">
               AJU
             </th>
-            <th className="text-center px-2 py-1 text-white font-semibold whitespace-nowrap tracking-wide">DESCR</th>
             <th className="text-right px-2 py-1 text-[#ff4500] font-semibold whitespace-nowrap tracking-wide">PRAZO</th>
             <th className="text-center px-2 py-1 text-[#20b2aa] font-semibold whitespace-nowrap tracking-wide">ATUALIZADO</th>
           </tr>

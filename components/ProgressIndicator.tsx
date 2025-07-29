@@ -43,12 +43,12 @@ export function ProgressIndicator({ isVisible, message = "Carregando dados..." }
       <div className="bg-[#1A1A1A] border border-gray-700 rounded-lg p-6 min-w-[300px]">
         <div className="text-center">
           <div className="mb-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto opacity-90"></div>
           </div>
           <h3 className="text-white text-lg mb-2">{message}</h3>
           <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
             <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             ></div>
           </div>

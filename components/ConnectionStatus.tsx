@@ -6,9 +6,10 @@ interface ConnectionStatusProps {
   isLoading: boolean
   error: Error | null
   lastUpdate?: string
+  isInHeader?: boolean
 }
 
-export const ConnectionStatus = React.memo(function ConnectionStatus({ isLoading, error, lastUpdate }: ConnectionStatusProps) {
+export const ConnectionStatus = React.memo(function ConnectionStatus({ isLoading, error, lastUpdate, isInHeader = false }: ConnectionStatusProps) {
   const [isOnline, setIsOnline] = useState(true)
 
   useEffect(() => {
@@ -54,13 +55,16 @@ export const ConnectionStatus = React.memo(function ConnectionStatus({ isLoading
   }
 
   return (
-    <div className="fixed bottom-4 right-4 bg-black/80 text-white px-3 py-2 rounded-lg text-xs z-50">
+    <div className={isInHeader 
+      ? "bg-black/60 text-white px-2 py-1 rounded text-xs" 
+      : "fixed bottom-4 right-4 bg-black/80 text-white px-3 py-2 rounded-lg text-xs z-50"
+    }>
       <div className="flex items-center space-x-2">
         <div 
           className={`w-2 h-2 rounded-full ${getStatusColor()} ${isLoading ? 'animate-pulse' : ''}`}
         ></div>
         <span>{getStatusText()}</span>
-        {lastUpdate && !error && (
+        {lastUpdate && !error && !isInHeader && (
           <span className="text-gray-400">
             • {formatLastUpdate(lastUpdate)}
           </span>

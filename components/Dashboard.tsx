@@ -7,7 +7,6 @@ import { PTAXChart } from "@/components/PTAXChart"
 import { LoadingScreen } from "@/components/LoadingScreen"
 import { LoadingIndicator } from "@/components/LoadingIndicator"
 import { ProgressIndicator } from "@/components/ProgressIndicator"
-import { ConnectionStatus } from "@/components/ConnectionStatus"
 import { useEffect, useState, useRef, useMemo, useDeferredValue, useCallback } from "react"
 import { useScrollPreservation } from "@/hooks/useScrollPreservation"
 import { ExchangeRates } from "@/components/ExchangeRates"
@@ -17,6 +16,7 @@ import React from "react"
 import { MarketDataTable } from "@/components/MarketDataTable"
 import { parseB3Data } from "@/utils/parseB3Data"
 import { CBOTDataTables } from "@/components/CBOTDataTables"
+import { CurrencyConverterModal } from "@/components/CurrencyConverterModal"
 import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
 
 export default function Dashboard() {
@@ -211,7 +211,6 @@ export default function Dashboard() {
   // Componentes memoizados para evitar re-renderizações desnecessárias
   const MemoizedDraggableTables = React.memo(DraggableTables)
   const MemoizedExchangeRates = React.memo(ExchangeRates)
-  const MemoizedConnectionStatus = React.memo(ConnectionStatus)
 
   useEffect(() => {
     // Verificar se há um layout salvo no localStorage
@@ -244,15 +243,7 @@ export default function Dashboard() {
 
   // Mostrar loading apenas se nunca carregou dados
   if (!initialDataFetched && !marketData && !error) {
-    return (
-      <>
-        <LoadingScreen />
-        <ProgressIndicator 
-          isVisible={isLoading} 
-          message="Carregando dados de mercado em tempo real..."
-        />
-      </>
-    )
+    return <LoadingScreen />
   }
 
   // Se há erro mas nunca carregou dados, mostrar erro
@@ -303,11 +294,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background stable-layout interface-glow">
       <LoadingIndicator isLoading={isLoading && initialDataFetched} message="Atualizando dados" />
-      <MemoizedConnectionStatus 
-        isLoading={isLoading} 
-        error={error} 
-        lastUpdate={marketData ? new Date().toISOString() : undefined}
-      />
+
       {marketStatus.status === "open" ? (
         <div className="bg-green-800 text-white p-2 text-center">Mercado aberto - Sessão {marketStatus.session}</div>
       ) : (
@@ -373,7 +360,12 @@ export default function Dashboard() {
                 )}
 
                 {/* Tabela Curva do Dólar */}
-                <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 mt-6">Curva do Dólar</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 mt-6">
+                  <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white">Curva do Dólar</h2>
+                  {visibleTables.includes("dollar") && deferredCurvaData.length > 0 && (
+                    <CurrencyConverterModal curvaData={deferredCurvaData} />
+                  )}
+                </div>
                 {visibleTables.includes("dollar") && deferredCurvaData.length > 0 ? (
                   <MarketDataTable data={deferredCurvaData} title="CURVA DE DÓLAR" />
                 ) : (

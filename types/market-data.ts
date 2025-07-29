@@ -20,6 +20,7 @@ export interface ParsedCurvaData {
   var: number | null
   datetime: string
   lastUpdate?: string
+  dataVencimento?: string // Nova propriedade para data de vencimento
 }
 
 export interface MarketResponse {
