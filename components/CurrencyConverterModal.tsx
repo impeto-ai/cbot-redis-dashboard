@@ -270,8 +270,7 @@ export function CurrencyConverterModal({
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto"
-        hideCloseButton={true}
+        className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto [&>[data-radix-dialog-close]]:hidden [&_[data-radix-dialog-close]]:hidden"
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white relative">
@@ -298,7 +297,6 @@ export function CurrencyConverterModal({
             <TabsTrigger 
               value="convert" 
               className="data-[state=active]:bg-yellow-600 data-[state=active]:text-black relative z-20"
-              onClick={(e) => e.stopPropagation()}
             >
               <Calculator className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Converter</span>
@@ -307,7 +305,6 @@ export function CurrencyConverterModal({
             <TabsTrigger 
               value="date" 
               className="data-[state=active]:bg-yellow-600 data-[state=active]:text-black relative z-20"
-              onClick={(e) => e.stopPropagation()}
             >
               <Calendar className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Por Data</span>
@@ -339,7 +336,6 @@ export function CurrencyConverterModal({
             <Select value={selectedCurva} onValueChange={setSelectedCurva}>
               <SelectTrigger 
                 className="bg-slate-800 border-slate-600 text-white focus:border-yellow-400"
-                onClick={(e) => e.stopPropagation()}
               >
                 <SelectValue placeholder="Selecione uma curva" />
               </SelectTrigger>
@@ -441,8 +437,6 @@ export function CurrencyConverterModal({
                     [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   placeholder="dd/mm/aaaa"
                   title="Selecionar data"
-                  onClick={(e) => e.stopPropagation()}
-                  onFocus={(e) => e.stopPropagation()}
                 />
                 <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-yellow-400 pointer-events-none opacity-60" />
               </div>

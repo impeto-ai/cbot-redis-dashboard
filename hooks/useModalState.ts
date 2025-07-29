@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback } from "react"
 
 // Hook para manter estado do modal persistente durante re-renders
 export function useModalState() {
   const [isOpen, setIsOpen] = useState(false)
-  const modalStateRef = useRef({
+  const [modalState, setModalState] = useState({
     amount: "",
     selectedCurva: "",
     conversionDirection: "usd-to-brl" as "brl-to-usd" | "usd-to-brl",
@@ -25,7 +25,7 @@ export function useModalState() {
   const closeModal = useCallback(() => {
     setIsOpen(false)
     // Reset form state when closing
-    modalStateRef.current = {
+    setModalState({
       amount: "",
       selectedCurva: "",
       conversionDirection: "usd-to-brl",
@@ -36,18 +36,18 @@ export function useModalState() {
       quickConvertAmount: "",
       quickConvertResult: "",
       quickConversionDirection: "usd-to-brl"
-    }
+    })
   }, [])
 
-  const updateModalState = useCallback((updates: Partial<typeof modalStateRef.current>) => {
-    modalStateRef.current = { ...modalStateRef.current, ...updates }
+  const updateModalState = useCallback((updates: Partial<typeof modalState>) => {
+    setModalState(prev => ({ ...prev, ...updates }))
   }, [])
 
   return {
     isOpen,
     openModal,
     closeModal,
-    modalState: modalStateRef.current,
+    modalState,
     updateModalState
   }
 }
