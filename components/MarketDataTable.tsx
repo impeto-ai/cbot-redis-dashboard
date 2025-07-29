@@ -50,7 +50,7 @@ const MemoizedTableRow = React.memo(({ item, formatNumber, formatHora }: Memoize
       >
         {formatNumber(item.var)}
       </td>
-      <td className="px-2 py-1 text-center text-[#40c4ff] whitespace-nowrap hidden sm:table-cell data-cell">
+      <td className="px-2 py-1 text-center text-[#40c4ff] whitespace-nowrap data-cell">
         {item.dataVencimento || "-"}
       </td>
       <td className="px-2 py-1 text-center text-white whitespace-nowrap hidden md:table-cell data-cell">
@@ -99,13 +99,13 @@ export const MarketDataTable = React.memo(function MarketDataTable({
         <h2 className="text-black font-bold text-xs sm:text-sm md:text-base">{title}</h2>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-xs sm:text-sm md:text-base">
+        <table className="w-full border-collapse text-xs sm:text-sm md:text-base min-w-[400px]">
           <thead>
             <tr className="bg-[#1a1f2e]">
               <th className="text-left px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Curva</th>
               <th className="text-right px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Taxa</th>
               <th className="text-right px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Var</th>
-              <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap hidden sm:table-cell">
+              <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap">
                 Vencimento
               </th>
               <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap hidden md:table-cell">
