@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calculator, ArrowLeftRight, TrendingUp, DollarSign, Calendar, Zap, X } from "lucide-react"
 import type { ParsedCurvaData } from "@/types/market-data"
+import { extractDaysFromCurva } from "@/utils/dateUtils"
 
 interface CurrencyConverterModalProps {
   curvaData: ParsedCurvaData[]
@@ -25,12 +26,6 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
   const [quickConvertAmount, setQuickConvertAmount] = useState<string>("")
   const [quickConvertResult, setQuickConvertResult] = useState<string>("")
   const [quickConversionDirection, setQuickConversionDirection] = useState<"usd-to-brl" | "brl-to-usd">("usd-to-brl")
-
-  // Função utilitária para extrair dias da curva
-  const extractDaysFromCurva = (curva: string): number => {
-    const match = curva.match(/(\d+)D/i)
-    return match ? Number.parseInt(match[1], 10) : 0
-  }
 
   // Ordenar curvas por número de dias
   const sortedCurvaData = useMemo(() => {
