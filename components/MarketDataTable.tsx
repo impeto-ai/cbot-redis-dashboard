@@ -41,9 +41,14 @@ interface MemoizedTableRowProps {
 }
 
 const MemoizedTableRow = React.memo(({ item, formatNumber, formatHora }: MemoizedTableRowProps) => {
+  // Função para limpar o texto da curva removendo "CURVA DE DOLAR"
+  const cleanCurvaText = (curva: string): string => {
+    return curva.replace(/CURVA\s*DE\s*DOLAR\s*/i, '').trim()
+  }
+
   return (
     <tr key={item.curva} className="border-b border-gray-800 hover:bg-[#1a1f2e] no-flash">
-      <td className="px-2 py-1 text-[#ffff00] whitespace-nowrap data-cell">{item.curva}</td>
+      <td className="px-2 py-1 text-[#ffff00] whitespace-nowrap data-cell">{cleanCurvaText(item.curva)}</td>
       <td className="px-2 py-1 text-right text-white whitespace-nowrap data-cell">{formatNumber(item.taxa)}</td>
       <td
         className={`px-2 py-1 text-right ${item.var && item.var >= 0 ? "text-[#00ff00]" : "text-[#ff4444]"} data-cell whitespace-nowrap`}
@@ -65,7 +70,7 @@ MemoizedTableRow.displayName = "MemoizedTableRow"
 // Modificar o componente MarketDataTable para usar React.memo
 export const MarketDataTable = React.memo(function MarketDataTable({
   data,
-  title = "CURVA DE DOLAR",
+  title = "Curva do Dólar",
 }: MarketDataTableProps) {
   const formatNumber = (value: number | null | undefined, decimals = 4): string => {
     if (value === null || value === undefined) return "-"
