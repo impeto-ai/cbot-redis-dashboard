@@ -50,10 +50,10 @@ const MemoizedTableRow = React.memo(({ item, formatNumber, formatHora }: Memoize
       >
         {formatNumber(item.var)}
       </td>
-      <td className="px-2 py-1 text-center text-[#40c4ff] whitespace-nowrap hidden lg:table-cell data-cell">
+      <td className="px-2 py-1 text-center text-[#40c4ff] whitespace-nowrap hidden sm:table-cell data-cell">
         {item.dataVencimento || "-"}
       </td>
-      <td className="px-2 py-1 text-center text-white whitespace-nowrap hidden sm:table-cell data-cell">
+      <td className="px-2 py-1 text-center text-white whitespace-nowrap hidden md:table-cell data-cell">
         {formatHora(item.datetime)}
       </td>
     </tr>
@@ -105,10 +105,10 @@ export const MarketDataTable = React.memo(function MarketDataTable({
               <th className="text-left px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Curva</th>
               <th className="text-right px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Taxa</th>
               <th className="text-right px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Var</th>
-              <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap hidden lg:table-cell">
+              <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap hidden sm:table-cell">
                 Vencimento
               </th>
-              <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap hidden sm:table-cell">
+              <th className="text-center px-2 py-1 text-gray-300 font-normal whitespace-nowrap hidden md:table-cell">
                 Hora
               </th>
             </tr>

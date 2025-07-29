@@ -100,7 +100,7 @@ export function PTAXChart() {
   return (
     <Card className="w-full bg-[#1A1A1A] border-0">
       <div className="bg-gradient-to-r from-[#004d40] to-[#00695c] px-2 py-1">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <h2 className="text-[#00ff00] text-xs sm:text-sm md:text-base font-bold">PTAX - Evolução últimos 30 dias</h2>
           <span className="text-[#00ff00] text-xs sm:text-sm md:text-base">BACEN - Banco Central do Brasil</span>
         </div>
@@ -109,21 +109,31 @@ export function PTAXChart() {
         <div className="space-y-4">
           <div className="h-[200px] sm:h-[300px] relative">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 10, right: 30, left: 30, bottom: 10 }}>
+              <LineChart 
+                data={chartData} 
+                margin={{ 
+                  top: 10, 
+                  right: 10, 
+                  left: 10, 
+                  bottom: 10 
+                }}
+              >
                 <XAxis
                   dataKey="date"
                   stroke="#666666"
-                  tick={{ fill: "#666666", fontSize: 10 }}
+                  tick={{ fill: "#666666", fontSize: 8 }}
                   tickFormatter={(value) => {
                     const date = new Date(value)
                     return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
                   }}
+                  height={40}
                 />
                 <YAxis
                   stroke="#666666"
-                  tick={{ fill: "#666666", fontSize: 10 }}
+                  tick={{ fill: "#666666", fontSize: 8 }}
                   domain={["auto", "auto"]}
                   tickFormatter={(value) => value.toFixed(2)}
+                  width={45}
                 />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#1A1A1A", border: "1px solid #333" }}
