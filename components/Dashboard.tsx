@@ -9,6 +9,8 @@ import { LoadingIndicator } from "@/components/LoadingIndicator"
 import { ProgressIndicator } from "@/components/ProgressIndicator"
 import { useEffect, useState, useRef, useMemo, useDeferredValue, useCallback } from "react"
 import { useScrollPreservation } from "@/hooks/useScrollPreservation"
+import { useModalState } from "@/hooks/useModalState"
+import { useStableCurvaData } from "@/hooks/useStableCurvaData"
 import { ExchangeRates } from "@/components/ExchangeRates"
 import { TableFilter } from "@/components/TableFilter"
 import { DraggableTables } from "@/components/DraggableTables"
@@ -22,6 +24,7 @@ import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
 export default function Dashboard() {
   const { data: marketData, error, isLoading, initialDataFetched, marketStatus, isPageVisible } = useMarketData()
   const { preserveScroll, isUserScrolling } = useScrollPreservation()
+  const modalControls = useModalState()
 
   const [parsedSoybeanData, setParsedSoybeanData] = useState<ParsedMarketData[]>([])
   const [parsedCornData, setParsedCornData] = useState<ParsedMarketData[]>([])
@@ -38,6 +41,18 @@ export default function Dashboard() {
   // Usar refs para manter referência aos dados anteriores
   const prevMarketDataRef = useRef(null)
   const processingDataRef = useRef(false)
+
+  // Adicionar useDeferredValue após a declaração dos estados
+  const deferredSoybeanData = useDeferredValue(parsedSoybeanData)
+  const deferredCornData = useDeferredValue(parsedCornData)
+  const deferredWheatData = useDeferredValue(parsedWheatData)
+  const deferredMealData = useDeferredValue(parsedMealData)
+  const deferredOilData = useDeferredValue(parsedOilData)
+  const deferredB3Data = useDeferredValue(parsedB3Data)
+  const deferredCurvaData = useDeferredValue(parsedCurvaData)
+  
+  // Usar dados estáveis da curva para evitar re-renders do modal
+  const stableCurvaData = useStableCurvaData(deferredCurvaData)
 
   // Modificar o componente Dashboard para reduzir re-renderizações
 
@@ -197,16 +212,6 @@ export default function Dashboard() {
     return () => clearTimeout(timeoutId)
   }, [updateDataWithScrollPreservation])
 
-  // Modificar a função para usar useDeferredValue para suavizar as atualizações
-  // Adicionar useDeferredValue após a declaração dos estados
-  const deferredSoybeanData = useDeferredValue(parsedSoybeanData)
-  const deferredCornData = useDeferredValue(parsedCornData)
-  const deferredWheatData = useDeferredValue(parsedWheatData)
-  const deferredMealData = useDeferredValue(parsedMealData)
-  const deferredOilData = useDeferredValue(parsedOilData)
-  // Adicione o useDeferredValue para os dados da B3
-  const deferredB3Data = useDeferredValue(parsedB3Data)
-  const deferredCurvaData = useDeferredValue(parsedCurvaData)
 
   // Componentes memoizados para evitar re-renderizações desnecessárias
   const MemoizedDraggableTables = React.memo(DraggableTables)
@@ -362,8 +367,14 @@ export default function Dashboard() {
                 {/* Tabela Curva do Dólar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 mt-6">
                   <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white">Curva do Dólar</h2>
-                  {visibleTables.includes("dollar") && deferredCurvaData.length > 0 && (
-                    <CurrencyConverterModal curvaData={deferredCurvaData} />
+                  {visibleTables.includes("dollar") && stableCurvaData.length > 0 && (
+                    <CurrencyConverterModal 
+                      curvaData={stableCurvaData}
+                      isOpen={modalControls.isOpen}
+                      onOpenChange={(open) => open ? modalControls.openModal() : modalControls.closeModal()}
+                      modalState={modalControls.modalState}
+                      updateModalState={modalControls.updateModalState}
+                    />
                   )}
                 </div>
                 {visibleTables.includes("dollar") && deferredCurvaData.length > 0 ? (

@@ -12,20 +12,53 @@ import { extractDaysFromCurva } from "@/utils/dateUtils"
 
 interface CurrencyConverterModalProps {
   curvaData: ParsedCurvaData[]
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+  modalState: {
+    amount: string
+    selectedCurva: string
+    conversionDirection: "brl-to-usd" | "usd-to-brl"
+    result: number | null
+    mode: "convert" | "date"
+    targetDate: string
+    dateResult: {curva: string, taxa: number, dias: number} | null
+    quickConvertAmount: string
+    quickConvertResult: string
+    quickConversionDirection: "usd-to-brl" | "brl-to-usd"
+  }
+  updateModalState: (updates: any) => void
 }
 
-export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProps) {
-  const [amount, setAmount] = useState<string>("")
-  const [selectedCurva, setSelectedCurva] = useState<string>("")
-  const [conversionDirection, setConversionDirection] = useState<"brl-to-usd" | "usd-to-brl">("usd-to-brl")
-  const [result, setResult] = useState<number | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
-  const [mode, setMode] = useState<"convert" | "date">("convert")
-  const [targetDate, setTargetDate] = useState<string>("")
-  const [dateResult, setDateResult] = useState<{curva: string, taxa: number, dias: number} | null>(null)
-  const [quickConvertAmount, setQuickConvertAmount] = useState<string>("")
-  const [quickConvertResult, setQuickConvertResult] = useState<string>("")
-  const [quickConversionDirection, setQuickConversionDirection] = useState<"usd-to-brl" | "brl-to-usd">("usd-to-brl")
+export function CurrencyConverterModal({ 
+  curvaData, 
+  isOpen, 
+  onOpenChange, 
+  modalState, 
+  updateModalState 
+}: CurrencyConverterModalProps) {
+  const {
+    amount,
+    selectedCurva,
+    conversionDirection,
+    result,
+    mode,
+    targetDate,
+    dateResult,
+    quickConvertAmount,
+    quickConvertResult,
+    quickConversionDirection
+  } = modalState
+
+  const setAmount = (value: string) => updateModalState({ amount: value })
+  const setSelectedCurva = (value: string) => updateModalState({ selectedCurva: value })
+  const setConversionDirection = (value: "brl-to-usd" | "usd-to-brl") => updateModalState({ conversionDirection: value })
+  const setResult = (value: number | null) => updateModalState({ result: value })
+  const setMode = (value: "convert" | "date") => updateModalState({ mode: value })
+  const setTargetDate = (value: string) => updateModalState({ targetDate: value })
+  const setDateResult = (value: {curva: string, taxa: number, dias: number} | null) => updateModalState({ dateResult: value })
+  const setQuickConvertAmount = (value: string) => updateModalState({ quickConvertAmount: value })
+  const setQuickConvertResult = (value: string) => updateModalState({ quickConvertResult: value })
+  const setQuickConversionDirection = (value: "usd-to-brl" | "brl-to-usd") => updateModalState({ quickConversionDirection: value })
 
   // Ordenar curvas por número de dias
   const sortedCurvaData = useMemo(() => {
@@ -74,9 +107,7 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
 
   // Função para alternar direção da conversão
   const toggleDirection = () => {
-    setConversionDirection(prev => 
-      prev === "brl-to-usd" ? "usd-to-brl" : "brl-to-usd"
-    )
+    setConversionDirection(conversionDirection === "brl-to-usd" ? "usd-to-brl" : "brl-to-usd")
     setResult(null)
   }
 
@@ -162,17 +193,7 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
 
   // Reset form quando modal fecha
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open)
-    if (!open) {
-      setAmount("")
-      setSelectedCurva("")
-      setResult(null)
-      setTargetDate("")
-      setDateResult(null)
-      setQuickConvertAmount("")
-      setQuickConvertResult("")
-      setMode("convert")
-    }
+    onOpenChange(open)
   }
 
   // Buscar curva automaticamente quando a data muda
@@ -248,13 +269,16 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           Conversor de Moeda
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto [&>[data-radix-dialog-close]]:hidden [&_[data-radix-dialog-close]]:hidden">
+      <DialogContent 
+        className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto"
+        hideCloseButton={true}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white relative">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsOpen(false)}
+              onClick={() => onOpenChange(false)}
               className="absolute -left-2 -top-1 w-8 h-8 p-0 hover:bg-slate-800 text-gray-400 hover:text-white"
             >
               <X className="w-4 h-4" />

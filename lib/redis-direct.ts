@@ -46,7 +46,13 @@ async function fetchFromUpstash(endpoint: string, options: RequestInit = {}): Pr
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
   if (!url || !token) {
-    throw new Error("Credenciais Redis não configuradas")
+    console.error("Credenciais Redis não configuradas:", {
+      hasUrl: !!url,
+      hasToken: !!token,
+      url: url ? `${url.substring(0, 20)}...` : 'undefined',
+      token: token ? `${token.substring(0, 10)}...` : 'undefined'
+    })
+    throw new Error("Credenciais Redis não configuradas - verifique UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN")
   }
 
   try {
@@ -164,6 +170,19 @@ export async function getAllKeys(): Promise<string[]> {
 
 // Função para buscar todos os valores de uma vez
 export async function getAllValues(): Promise<Record<string, any>> {
+  console.log("🚀 Iniciando getAllValues - verificando configuração...")
+  
+  // Verificar credenciais logo no início
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  
+  console.log("📊 Status das credenciais:", {
+    hasUrl: !!url,
+    hasToken: !!token,
+    nodeEnv: process.env.NODE_ENV,
+    totalEnvVars: Object.keys(process.env).length
+  })
+  
   const cacheKey = "all_values"
   const cachedItem = cache[cacheKey]
   const now = Date.now()
@@ -244,11 +263,23 @@ async function getAllValuesInternal(): Promise<Record<string, any>> {
     // Construir um array de comandos para o pipeline
     const pipeline = keys.map((key) => ["GET", key])
 
+    // Verificar credenciais antes de fazer requisição
+    const url = process.env.UPSTASH_REDIS_REST_URL
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN
+    
+    if (!url || !token) {
+      console.error("Credenciais Redis não configuradas para pipeline:", {
+        hasUrl: !!url,
+        hasToken: !!token
+      })
+      throw new Error("Credenciais Redis não configuradas para pipeline")
+    }
+
     // Fazer a requisição de pipeline
-    const pipelineResponse = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+    const pipelineResponse = await fetch(`${url}/pipeline`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(pipeline),

@@ -6,8 +6,8 @@ import type { MarketResponse } from "@/types/market-data"
 
 // Modificar a função useMarketData para reduzir a frequência de atualizações e implementar debounce
 
-// Aumentar o intervalo de atualização para reduzir tremidas na tela
-const FETCH_INTERVAL = 60000 // 60 segundos para reduzir carga no servidor e tremidas na UI
+// Manter intervalo de 60s para dados atualizados, mas sem causar blinks visuais
+const FETCH_INTERVAL = 60000 // 60 segundos - dados sempre atualizados
 
 // Adicionar um debounce para as atualizações de estado
 const useDebounce = (value: any, delay: number) => {
@@ -220,7 +220,7 @@ const isMarketHours = (): { isOpen: boolean; session: "noturna" | "diurna" | "fe
 export function useMarketData() {
   const [lastSuccessfulData, setLastSuccessfulData] = useState<MarketResponse | null>(null)
   const [pendingData, setPendingData] = useState<MarketResponse | null>(null)
-  const debouncedPendingData = useDebounce(pendingData, 500) // Reduzir debounce para resposta mais rápida
+  const debouncedPendingData = useDebounce(pendingData, 1500) // Aumentar debounce para reduzir blinks visuais
   const updateInProgressRef = useRef(false)
   const [marketStatus, setMarketStatus] = useState<{
     status: "open" | "closed" | "weekend"
@@ -290,7 +290,7 @@ export function useMarketData() {
     }
   }, [])
 
-  // Reduzir a frequência de atualização forçada
+  // Manter força de atualização a cada 2 minutos para garantir dados frescos
   useEffect(() => {
     const interval = setInterval(() => {
       setForceUpdate((prev) => prev + 1)
