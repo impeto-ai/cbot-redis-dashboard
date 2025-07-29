@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calculator, ArrowLeftRight, TrendingUp, DollarSign, Calendar, Zap, X } from "lucide-react"
 import type { ParsedCurvaData } from "@/types/market-data"
 import { extractDaysFromCurva } from "@/utils/dateUtils"
-import { useEffect } from "react"
 
 interface CurrencyConverterModalProps {
   curvaData: ParsedCurvaData[]
@@ -27,27 +26,6 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
   const [quickConvertAmount, setQuickConvertAmount] = useState<string>("")
   const [quickConvertResult, setQuickConvertResult] = useState<string>("")
   const [quickConversionDirection, setQuickConversionDirection] = useState<"usd-to-brl" | "brl-to-usd">("usd-to-brl")
-
-  // Remove qualquer botão padrão do Dialog que apareça
-  useEffect(() => {
-    const removeDefaultCloseButtons = () => {
-      const buttons = document.querySelectorAll('[data-radix-dialog-close]')
-      buttons.forEach(button => {
-        if (button !== document.querySelector('.custom-close-button')) {
-          (button as HTMLElement).style.display = 'none !important'
-          button.remove()
-        }
-      })
-    }
-    
-    if (isOpen) {
-      // Remove imediatamente
-      removeDefaultCloseButtons()
-      // E monitora se novos aparecem
-      const interval = setInterval(removeDefaultCloseButtons, 100)
-      return () => clearInterval(interval)
-    }
-  }, [isOpen])
 
   // Ordenar curvas por número de dias
   const sortedCurvaData = useMemo(() => {
@@ -270,37 +248,14 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           Conversor de Moeda
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto" 
-        style={{
-          position: 'relative'
-        }}
-      >
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            [data-radix-dialog-content] > button[data-radix-dialog-close]:not(.custom-close-button) {
-              display: none !important;
-              visibility: hidden !important;
-              opacity: 0 !important;
-              pointer-events: none !important;
-            }
-            [data-radix-dialog-content] [data-radix-dialog-close]:not(.custom-close-button) {
-              display: none !important;
-              visibility: hidden !important;
-              opacity: 0 !important;
-              pointer-events: none !important;
-            }
-            button[data-radix-dialog-close]:not(.custom-close-button) {
-              display: none !important;
-            }
-          `
-        }} />
+      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto [&>[data-radix-dialog-close]]:hidden [&_[data-radix-dialog-close]]:hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white relative">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(false)}
-              className="custom-close-button absolute -left-2 -top-1 w-8 h-8 p-0 hover:bg-slate-800 text-gray-400 hover:text-white"
+              className="absolute -left-2 -top-1 w-8 h-8 p-0 hover:bg-slate-800 text-gray-400 hover:text-white"
             >
               <X className="w-4 h-4" />
             </Button>
