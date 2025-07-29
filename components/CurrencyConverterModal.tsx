@@ -248,7 +248,7 @@ export function CurrencyConverterModal({ curvaData }: CurrencyConverterModalProp
           Conversor de Moeda
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto [&>button[data-dialog-close]]:hidden [&_button[data-dialog-close]]:hidden">
+      <DialogContent className="w-[95vw] max-w-lg bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto [&>[data-radix-dialog-close]]:hidden [&_[data-radix-dialog-close]]:hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white relative">
             <Button

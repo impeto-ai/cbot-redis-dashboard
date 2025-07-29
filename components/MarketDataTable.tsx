@@ -105,6 +105,13 @@ export const MarketDataTable = React.memo(function MarketDataTable({
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-xs sm:text-sm md:text-base min-w-[400px]">
+          <colgroup>
+            <col className="w-[15%]" /> {/* Curva - encurtada */}
+            <col className="w-[25%]" /> {/* Taxa */}
+            <col className="w-[25%]" /> {/* Var */}
+            <col className="w-[25%]" /> {/* Vencimento */}
+            <col className="w-[10%]" /> {/* Hora (hidden on mobile) */}
+          </colgroup>
           <thead>
             <tr className="bg-[#1a1f2e]">
               <th className="text-left px-2 py-1 text-gray-300 font-normal whitespace-nowrap">Curva</th>
