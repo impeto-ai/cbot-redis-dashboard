@@ -1,0 +1,180 @@
+"use client"
+
+import { Card, CardContent } from "@/components/ui/card"
+import { useMarketData } from "@/hooks/useMarketData"
+import { useMarketDataParser } from "@/hooks/useMarketDataParser"
+import { PTAXChart } from "@/components/PTAXChart"
+import { LoadingScreen } from "@/components/LoadingScreen"
+import { LoadingIndicator } from "@/components/LoadingIndicator"
+import { ProgressIndicator } from "@/components/ProgressIndicator"
+import { useEffect, useState, useCallback, startTransition } from "react"
+import { useScrollPreservation } from "@/hooks/useScrollPreservation"
+import { useModalState } from "@/hooks/useModalState"
+import { ExchangeRates } from "@/components/ExchangeRates"
+import { TableFilter } from "@/components/TableFilter"
+import { DraggableTables } from "@/components/DraggableTables"
+import React from "react"
+import { MarketDataTable } from "@/components/MarketDataTable"
+import { CBOTDataTables } from "@/components/CBOTDataTables"
+import { CurrencyConverterModal } from "@/components/CurrencyConverterModal"
+import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
+
+export default function DashboardOptimized() {
+  const { data: marketData, error, isLoading, initialDataFetched, marketStatus, isPageVisible } = useMarketData()
+  const { parsedData, isParsing } = useMarketDataParser(marketData)
+  const { preserveScroll } = useScrollPreservation()
+  const modalControls = useModalState()
+
+  const [visibleTables, setVisibleTables] = useState<string[]>(["soybean", "corn", "meal", "oil", "bmf", "dollar"])
+  const [tableLayout, setTableLayout] = useState<"horizontal" | "vertical">("vertical")
+
+  // Componentes memoizados para evitar re-renderizações desnecessárias
+  const MemoizedDraggableTables = React.memo(DraggableTables)
+  const MemoizedExchangeRates = React.memo(ExchangeRates)
+
+  useEffect(() => {
+    // Verificar se há um layout salvo no localStorage
+    const savedLayout = localStorage.getItem("tableLayout")
+    if (!savedLayout) {
+      setTableLayout("vertical")
+    } else {
+      try {
+        const parsedLayout = JSON.parse(savedLayout)
+        const hasHorizontalLayout = parsedLayout.some((table: any) => table.layout === "horizontal")
+        setTableLayout(hasHorizontalLayout ? "horizontal" : "vertical")
+      } catch (e) {
+        console.error("Erro ao analisar layout salvo:", e)
+        setTableLayout("vertical")
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPageVisible) {
+      console.log("Página não está visível. Pausando atualizações em tempo real.")
+    }
+  }, [isPageVisible])
+
+  // Mostrar loading apenas se nunca carregou dados
+  if (!initialDataFetched || isLoading) {
+    return <LoadingScreen />
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0a0f14] flex items-center justify-center text-red-500 p-4">
+        <Card className="bg-[#1a2327] border-red-500/30">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold mb-2">Erro ao carregar dados</h2>
+            <p className="text-sm text-gray-400">{error.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Se não temos dados parseados ainda, mostrar loading
+  if (!parsedData) {
+    return <LoadingScreen />
+  }
+
+  const {
+    soybeanData = [],
+    cornData = [],
+    wheatData = [],
+    mealData = [],
+    oilData = [],
+    b3Data = [],
+    curvaData = [],
+  } = parsedData
+
+  return (
+    <main className="min-h-screen bg-[#0a0f14] relative p-4 md:p-6 lg:p-8 xl:p-12">
+      {/* Loading indicator durante atualizações */}
+      {isParsing && <LoadingIndicator isLoading={isParsing} />}
+
+      {/* Progress indicator */}
+      <ProgressIndicator isVisible={isLoading || isParsing} />
+
+      {/* Filtros e controles */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <TableFilter
+          visibleTables={visibleTables}
+          onToggleTable={(table) => {
+            startTransition(() => {
+              setVisibleTables((prev) =>
+                prev.includes(table) ? prev.filter((t) => t !== table) : [...prev, table]
+              )
+            })
+          }}
+          tableLayout={tableLayout}
+          onLayoutChange={(layout) => {
+            startTransition(() => {
+              setTableLayout(layout)
+            })
+          }}
+        />
+      </div>
+
+      {/* Grid principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 lg:gap-8 mb-8">
+        {/* Coluna esquerda - Tabelas CBOT */}
+        <div className="lg:col-span-3 space-y-4">
+          <Card className="bg-[#1a2327]/80 backdrop-blur-sm border-[#2a3a3f] overflow-hidden shadow-2xl rounded-2xl">
+            <CardContent className="p-4 md:p-6">
+              <MemoizedDraggableTables
+                visibleTables={visibleTables}
+                tableLayout={tableLayout}
+                soybeanData={soybeanData}
+                cornData={cornData}
+                wheatData={wheatData}
+                mealData={mealData}
+                oilData={oilData}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Coluna direita - Câmbio, B3 e Curva */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Taxa de câmbio */}
+          <Card className="bg-[#1a2327]/80 backdrop-blur-sm border-[#2a3a3f] shadow-xl rounded-2xl">
+            <CardContent className="p-4 md:p-6">
+              <MemoizedExchangeRates data={marketData} />
+            </CardContent>
+          </Card>
+
+          {/* B3 - Milho */}
+          {visibleTables.includes("bmf") && (
+            <Card className="bg-[#1a2327]/80 backdrop-blur-sm border-[#2a3a3f] shadow-xl rounded-2xl">
+              <CardContent className="p-4 md:p-6">
+                <CBOTDataTables data={b3Data} title="B3 - MILHO (CCM)" />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Modal de conversão de moedas */}
+          <CurrencyConverterModal curvaData={curvaData} modalControls={modalControls} />
+
+          {/* Curva de Dólar */}
+          {visibleTables.includes("dollar") && (
+            <Card className="bg-[#1a2327]/80 backdrop-blur-sm border-[#2a3a3f] shadow-xl rounded-2xl">
+              <CardContent className="p-4 md:p-6">
+                <MarketDataTable data={curvaData} modalControls={modalControls} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* PTAX Chart */}
+      <div className="mb-8">
+        <Card className="bg-[#1a2327]/80 backdrop-blur-sm border-[#2a3a3f] shadow-2xl rounded-2xl">
+          <CardContent className="p-4 md:p-6">
+            <PTAXChart />
+          </CardContent>
+        </Card>
+      </div>
+    </main>
+  )
+}

@@ -1,0 +1,186 @@
+"use client"
+
+import React, { useRef, useEffect } from "react"
+import { FixedSizeList as List } from "react-window"
+import type { ParsedMarketData } from "@/types/market-data"
+import { useDataFlash } from "@/hooks/useDataFlash"
+
+interface VirtualizedCBOTTableProps {
+  data: ParsedMarketData[]
+  title?: string
+}
+
+// Row renderer memoizado
+const TableRow = React.memo(
+  ({
+    item,
+    style,
+    flashClass,
+  }: {
+    item: ParsedMarketData
+    style: React.CSSProperties
+    flashClass: string
+  }) => {
+    const formatNumber = (value: number | null | undefined, decimals = 2): string => {
+      if (value === null || value === undefined) return "-"
+      return value.toFixed(decimals)
+    }
+
+    const formatPercentage = (value: number | null | undefined): string => {
+      if (value === null || value === undefined) return "-"
+      return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`
+    }
+
+    const formatLastUpdate = (lastUpdate: string | undefined): string => {
+      if (!lastUpdate) return "-"
+      try {
+        const date = new Date(lastUpdate)
+        return date.toLocaleTimeString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        })
+      } catch (error) {
+        return "-"
+      }
+    }
+
+    const getMaturityClass = (days: number): string => {
+      if (days <= 30) return "maturity-urgent"
+      if (days <= 90) return "maturity-soon"
+      return "maturity-normal"
+    }
+
+    const getVariationClass = (variation: number | null | undefined): string => {
+      if (!variation) return ""
+      if (Math.abs(variation) >= 5) return "variation-high"
+      if (Math.abs(variation) >= 2) return "variation-medium"
+      return ""
+    }
+
+    const isPctPositive = (item.variacao || 0) >= 0
+    const isDiffPositive = (item.diff || 0) >= 0
+    const pctColor = isPctPositive ? "text-[#00ff00]" : "text-[#ff4444]"
+    const diffColor = isDiffPositive ? "text-[#00ff00]" : "text-[#ff4444]"
+    const variationGlowClass = getVariationClass(item.variacao)
+
+    return (
+      <div
+        style={{
+          ...style,
+          display: "flex",
+          alignItems: "center",
+          borderBottom: "1px solid #1f2937",
+        }}
+        className={`${flashClass} transition-colors duration-200`}
+      >
+        <div className="flex w-full px-2 py-1 text-sm">
+          <div className="flex-[0.8] text-left text-[#40c4ff] font-medium truncate">{item.symbol}</div>
+          <div className="flex-[0.8] text-center text-white truncate">{item.vencimento}</div>
+          <div className="flex-[0.8] text-right text-yellow-400 font-bold truncate">
+            {formatNumber(item.ultimoPreco)}
+          </div>
+          <div className={`flex-[0.8] text-right ${pctColor} ${variationGlowClass} truncate`}>
+            {formatPercentage(item.variacao)}
+          </div>
+          <div className={`flex-[0.8] text-right ${diffColor} truncate`}>{formatNumber(item.diff)}</div>
+          <div className="flex-[0.8] text-right text-white truncate hidden sm:block">
+            {formatNumber(item.maximo)}
+          </div>
+          <div className="flex-[0.8] text-right text-white truncate hidden sm:block">
+            {formatNumber(item.minimo)}
+          </div>
+          <div className="flex-[0.8] text-right text-white truncate hidden sm:block">
+            {formatNumber(item.abertura)}
+          </div>
+          <div className="flex-[0.8] text-right text-[#40c4ff] truncate hidden sm:block">
+            {formatNumber(item.fechamento)}
+          </div>
+          <div className="flex-[0.8] text-right text-[#40c4ff] truncate hidden sm:block">
+            {formatNumber(item.ajuste)}
+          </div>
+          <div className={`flex-[0.8] text-right text-gray-300 ${getMaturityClass(item.diasAteVencimento)} truncate`}>
+            {item.diasAteVencimento}
+          </div>
+          <div className="flex-[1] text-center text-gray-300 truncate">{formatLastUpdate(item.lastUpdate)}</div>
+        </div>
+      </div>
+    )
+  }
+)
+
+TableRow.displayName = "TableRow"
+
+export const VirtualizedCBOTTable = React.memo(function VirtualizedCBOTTable({
+  data,
+  title,
+}: VirtualizedCBOTTableProps) {
+  const { getFlashClass } = useDataFlash(data)
+  const listRef = useRef<List>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Auto-ajustar altura baseado no container
+  const [containerHeight, setContainerHeight] = React.useState(600)
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const height = Math.min(data.length * 40 + 40, 600) // 40px por linha + header, max 600px
+      setContainerHeight(height)
+    }
+  }, [data.length])
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        <p>Nenhum dado disponível</p>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={containerRef} className="w-full">
+      {title && (
+        <div className="mb-4">
+          <h3 className="text-lg font-bold text-[#40c4ff]">{title}</h3>
+        </div>
+      )}
+
+      {/* Header fixo */}
+      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2a4a6f] rounded-t-lg overflow-hidden">
+        <div className="flex w-full px-2 py-2 text-xs font-bold text-[#40c4ff] uppercase">
+          <div className="flex-[0.8] text-left">Símbolo</div>
+          <div className="flex-[0.8] text-center">Vencimento</div>
+          <div className="flex-[0.8] text-right">Último</div>
+          <div className="flex-[0.8] text-right">Var %</div>
+          <div className="flex-[0.8] text-right">Diff</div>
+          <div className="flex-[0.8] text-right hidden sm:block">Máx</div>
+          <div className="flex-[0.8] text-right hidden sm:block">Mín</div>
+          <div className="flex-[0.8] text-right hidden sm:block">Abertura</div>
+          <div className="flex-[0.8] text-right hidden sm:block">Fech.</div>
+          <div className="flex-[0.8] text-right hidden sm:block">Ajuste</div>
+          <div className="flex-[0.8] text-right">Dias</div>
+          <div className="flex-[1] text-center">Atualização</div>
+        </div>
+      </div>
+
+      {/* Lista virtualizada */}
+      <div className="bg-[#0f1419] rounded-b-lg overflow-hidden border border-gray-800">
+        <List
+          ref={listRef}
+          height={containerHeight}
+          itemCount={data.length}
+          itemSize={40}
+          width="100%"
+          overscanCount={5}
+        >
+          {({ index, style }) => {
+            const item = data[index]
+            const flashClass = getFlashClass(item.symbol)
+            return <TableRow item={item} style={style} flashClass={flashClass} />
+          }}
+        </List>
+      </div>
+    </div>
+  )
+})

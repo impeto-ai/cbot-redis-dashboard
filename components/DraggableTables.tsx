@@ -22,6 +22,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { GripVertical, ArrowLeftRight } from "lucide-react"
 import { CBOTDataTables } from "@/components/CBOTDataTables"
 import { MarketDataTable } from "@/components/MarketDataTable"
+import { TableSkeleton } from "@/components/TableSkeleton"
 import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
 import { useDataFlash } from "@/hooks/useDataFlash"
 
@@ -49,9 +50,7 @@ const SortableTable = React.memo(
 
     const style = {
       transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-      zIndex: isDragging ? 1 : 0,
+      transition: transition || "transform 250ms cubic-bezier(0.4, 0, 0.2, 1)",
       position: "relative" as const,
     }
 
@@ -62,26 +61,36 @@ const SortableTable = React.memo(
     }
 
     return (
-      <div ref={setNodeRef} style={style} className="relative group no-flash">
-        <div className="absolute top-0 right-0 flex items-center gap-2 p-1 bg-[#1a1f2e] rounded-bl z-20">
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`relative group no-flash mb-6 ${isDragging ? 'z-[9999] opacity-70 scale-105' : 'z-0'}`}
+        data-dnd-dragging={isDragging}
+      >
+        {/* Handle de drag MAIOR e mais visível */}
+        <div className="absolute -top-2 right-2 flex items-center gap-2 p-2 bg-[#1a1f2e] backdrop-blur-sm rounded-lg z-30 border border-slate-600/50 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
             type="button"
             onClick={handleLayoutToggle}
-            className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-gray-200 transition-colors z-30 clickable"
+            className="p-2 hover:bg-blue-600/30 rounded text-gray-400 hover:text-blue-400 transition-all duration-200 clickable hover:scale-125 active:scale-90"
             title={table.layout === "vertical" ? "Colocar lado a lado" : "Empilhar"}
           >
-            <ArrowLeftRight size={14} />
+            <ArrowLeftRight size={18} />
           </button>
           <div
             {...attributes}
             {...listeners}
-            className="p-1 hover:bg-gray-700 rounded cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-200 transition-colors"
-            title="Arrastar para reordenar"
+            className="drag-handle p-2 rounded cursor-grab active:cursor-grabbing text-gray-400 hover:text-blue-400 transition-all duration-200 hover:scale-125 active:scale-90"
+            title="🖐️ ARRASTE AQUI para reordenar"
           >
-            <GripVertical size={14} />
+            <GripVertical size={20} className="animate-pulse" />
           </div>
         </div>
-        <div className="table-fade-in no-flash">{children}</div>
+
+        {/* Borda ao passar o mouse para mostrar que pode arrastar */}
+        <div className={`table-fade-in no-flash border-2 border-transparent group-hover:border-blue-500/30 rounded-lg transition-all duration-200 ${isDragging ? 'border-blue-500 shadow-2xl shadow-blue-500/50' : ''}`}>
+          {children}
+        </div>
       </div>
     )
   },
@@ -214,7 +223,6 @@ export function DraggableTables({
         pairedWith: table.pairedWith,
       }))
       localStorage.setItem("tableLayout", JSON.stringify(tableState))
-      console.log("Saved table state:", tableState)
     }
   }, [tables, isInitialLoad])
 
@@ -401,7 +409,8 @@ export function DraggableTables({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3, // Mais sensível ao mouse - apenas 3px para ativar
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -412,36 +421,53 @@ export function DraggableTables({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (over && active.id !== over.id) {
-      setTables((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
-        const newIndex = items.findIndex((item) => item.id === over.id)
+    if (!over || active.id === over.id) return
 
-        // Create new array with updated order
-        const newItems = arrayMove(items, oldIndex, newIndex)
+    setTables((items) => {
+      const oldIndex = items.findIndex((item) => item.id === active.id)
+      const newIndex = items.findIndex((item) => item.id === over.id)
 
-        // Immediately save the new order to localStorage
-        const tableState = newItems.map((table) => ({
-          id: table.id,
-          type: table.type,
-          visible: table.visible,
-          layout: table.layout,
-          pairedWith: table.pairedWith,
-        }))
+      if (oldIndex === -1 || newIndex === -1) {
+        console.warn("Invalid drag indices:", { oldIndex, newIndex })
+        return items
+      }
+
+      // Create new array with updated order
+      const newItems = arrayMove(items, oldIndex, newIndex)
+
+      console.log("Drag completed:", {
+        from: items[oldIndex].id,
+        to: items[newIndex].id,
+        oldIndex,
+        newIndex
+      })
+
+      // Save to localStorage
+      const tableState = newItems.map((table) => ({
+        id: table.id,
+        type: table.type,
+        visible: table.visible,
+        layout: table.layout,
+        pairedWith: table.pairedWith,
+      }))
+
+      try {
         localStorage.setItem("tableLayout", JSON.stringify(tableState))
         console.log("Saved new table order:", tableState)
+      } catch (error) {
+        console.error("Failed to save table layout:", error)
+      }
 
-        // Update layout reference
-        newItems.forEach((table) => {
-          layoutRef.current[table.id] = {
-            layout: table.layout,
-            pairedWith: table.pairedWith,
-          }
-        })
-
-        return newItems
+      // Update layout reference
+      newItems.forEach((table) => {
+        layoutRef.current[table.id] = {
+          layout: table.layout,
+          pairedWith: table.pairedWith,
+        }
       })
-    }
+
+      return newItems
+    })
   }
 
   const toggleLayout = (tableId: string) => {
@@ -539,16 +565,9 @@ export function DraggableTables({
       }
     })()
 
-    // Se não houver dados, mostrar um placeholder
+    // Se não houver dados, mostrar skeleton
     if (!hasData) {
-      return (
-        <div className="bg-[#1A1A1A] p-4 rounded-md smooth-update">
-          <div className="bg-gradient-to-r from-[#004d40] to-[#00695c] px-2 py-1 mb-2">
-            <h2 className="text-[#00ff00] font-bold text-xs">{table.title}</h2>
-          </div>
-          <div className="text-gray-400 text-center p-4">Carregando dados...</div>
-        </div>
-      )
+      return <TableSkeleton rows={8} title={table.title} type="cbot" />
     }
 
     // Renderizar a tabela com os dados

@@ -10,8 +10,22 @@
       "Bash(lsof:*)",
       "Bash(npm run build:*)",
       "Bash(ls:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: remove logs excessivos e melhora estabilidade\n\n- Remove console.log desnecessários em useMarketData, DraggableTables e Dashboard\n- Mantém apenas console.error para erros críticos\n- Corrige erros de tipo em useSmoothTransition (useRef sem valor inicial)\n- Move arquivos não utilizados para .bak (Dashboard.optimized, VirtualizedCBOTTable)\n- Build concluído com sucesso\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase",
+    "server-sequential-thinking",
+    "github",
+    "context7",
+    "airtable-okz685-21",
+    "shadcn",
+    "playwright",
+    "notion"
+  ]
 }

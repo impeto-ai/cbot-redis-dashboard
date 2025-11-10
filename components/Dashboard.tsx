@@ -18,7 +18,8 @@ import React from "react"
 import { MarketDataTable } from "@/components/MarketDataTable"
 import { parseB3Data } from "@/utils/parseB3Data"
 import { CBOTDataTables } from "@/components/CBOTDataTables"
-import { CurrencyConverterModal } from "@/components/CurrencyConverterModal"
+import { FinancialCalculatorModal } from "@/components/FinancialCalculatorModal"
+import { TableSkeleton } from "@/components/TableSkeleton"
 import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
 
 export default function Dashboard() {
@@ -298,7 +299,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background stable-layout interface-glow">
-      <LoadingIndicator isLoading={isLoading && initialDataFetched} message="Atualizando dados" />
+      <LoadingIndicator isLoading={isLoading && initialDataFetched && !modalControls.isOpen} message="Atualizando dados" />
 
       {marketStatus.status === "open" ? (
         <div className="bg-green-800 text-white p-2 text-center">Mercado aberto - Sessão {marketStatus.session}</div>
@@ -357,9 +358,7 @@ export default function Dashboard() {
                     {deferredB3Data.length > 0 ? (
                       <CBOTDataTables data={deferredB3Data} title="MILHO BM&F" />
                     ) : (
-                      <div className="text-center text-gray-400 p-4 mb-4">
-                        {!visibleTables.includes("bmf") ? "BM&F está filtrada" : "Carregando dados..."}
-                      </div>
+                      <TableSkeleton rows={6} title="MILHO BM&F" type="cbot" />
                     )}
                   </>
                 )}
@@ -368,8 +367,12 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 mt-6">
                   <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white">Curva do Dólar</h2>
                   {visibleTables.includes("dollar") && stableCurvaData.length > 0 && (
-                    <CurrencyConverterModal 
+                    <FinancialCalculatorModal
                       curvaData={stableCurvaData}
+                      cbotData={{
+                        soybean: deferredSoybeanData,
+                        corn: deferredCornData
+                      }}
                       isOpen={modalControls.isOpen}
                       onOpenChange={(open) => open ? modalControls.openModal() : modalControls.closeModal()}
                       modalState={modalControls.modalState}
@@ -377,12 +380,12 @@ export default function Dashboard() {
                     />
                   )}
                 </div>
-                {visibleTables.includes("dollar") && deferredCurvaData.length > 0 ? (
-                  <MarketDataTable data={deferredCurvaData} title="CURVA DE DÓLAR" />
-                ) : (
-                  <div className="text-center text-gray-400 p-4">
-                    {!visibleTables.includes("dollar") ? "Curva do Dólar está filtrada" : "Carregando dados..."}
-                  </div>
+                {visibleTables.includes("dollar") && (
+                  deferredCurvaData.length > 0 ? (
+                    <MarketDataTable data={deferredCurvaData} title="CURVA DE DÓLAR" />
+                  ) : (
+                    <TableSkeleton rows={15} title="CURVA DE DÓLAR" type="curva" />
+                  )
                 )}
               </CardContent>
             </Card>

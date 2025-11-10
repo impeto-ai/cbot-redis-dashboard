@@ -3,6 +3,14 @@ const nextConfig = {
   // Desabilitar cache estático para todas as páginas
   reactStrictMode: true,
 
+  // Suporte a Web Workers
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.output.publicPath = `/_next/`
+    }
+    return config
+  },
+
   // Configurar imagens permitidas
   images: {
     domains: ['gwakkxqrbqiezvrsnzhb.supabase.co'],

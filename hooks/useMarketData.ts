@@ -4,27 +4,8 @@ import useSWR from "swr"
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { MarketResponse } from "@/types/market-data"
 
-// Modificar a função useMarketData para reduzir a frequência de atualizações e implementar debounce
-
-// Manter intervalo de 60s para dados atualizados, mas sem causar blinks visuais
-const FETCH_INTERVAL = 60000 // 60 segundos - dados sempre atualizados
-
-// Adicionar um debounce para as atualizações de estado
-const useDebounce = (value: any, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
+// Intervalo otimizado para atualizações suaves
+const FETCH_INTERVAL = 60000 // 60 segundos
 
 // Reduzir o intervalo de atualização para 15 segundos
 // const FETCH_INTERVAL = 15000 // 15 segundos
@@ -37,11 +18,8 @@ const fetcher = async (url: string) => {
 
   while (retryCount < maxRetries) {
     try {
-      console.log(`🔄 Tentativa ${retryCount + 1}/${maxRetries} para ${url}`)
-
       // Adicionar um timestamp único para evitar cache
       const urlWithTimestamp = `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`
-      console.log(`🌐 URL completa:`, urlWithTimestamp)
 
       const res = await fetch(urlWithTimestamp, {
         cache: "no-store",
@@ -53,63 +31,46 @@ const fetcher = async (url: string) => {
         signal: AbortSignal.timeout(15000), // 15 second timeout para permitir requests mais lentos
       })
 
-      console.log(`📡 Response status: ${res.status} ${res.statusText}`)
-
       if (!res.ok) {
         let errorData
         try {
           const text = await res.text()
-          console.log(`📜 Response text:`, text)
           errorData = text ? JSON.parse(text) : { error: `HTTP ${res.status}: ${res.statusText}` }
         } catch (e) {
-          console.log(`❌ Erro ao fazer parse da resposta:`, e)
           errorData = { error: `HTTP ${res.status}: ${res.statusText}` }
         }
-        
+
         const errorMessage = errorData?.error || errorData?.details || `HTTP ${res.status}: ${res.statusText}`
         const error = new Error(errorMessage)
         ;(error as any).status = res.status
         ;(error as any).info = errorData
         ;(error as any).url = url
-        
-        console.log(`🚨 Erro criado:`, {
-          message: error.message,
-          status: (error as any).status,
-          info: (error as any).info
-        })
-        
+
         throw error
       }
 
       const data = await res.json()
-      console.log(`✅ Dados recebidos com sucesso:`, Object.keys(data?.data || {}).length, "chaves")
       return data
     } catch (error) {
-      console.log(`🔍 Erro capturado (tipo: ${typeof error}):`, error)
       lastError = error as Error
       retryCount++
-      
-      console.error(`❌ Erro na tentativa ${retryCount}:`, {
-        message: lastError?.message || 'Mensagem não disponível',
-        name: lastError?.name || 'Nome não disponível',
-        status: (lastError as any)?.status || 'Status não disponível',
-        stack: lastError?.stack || 'Stack não disponível',
-        retryCount,
-        maxRetries,
-        errorType: typeof lastError,
-        errorObj: lastError
-      })
+
+      // Só logar erro na última tentativa
+      if (retryCount >= maxRetries) {
+        console.error("Erro ao buscar dados:", {
+          message: lastError?.message,
+          status: (lastError as any)?.status,
+        })
+      }
 
       // Se não for o último retry, aguardar antes de tentar novamente
       if (retryCount < maxRetries) {
         const delay = 1000 * Math.pow(2, retryCount) // Backoff exponencial: 2s, 4s, 8s...
-        console.log(`⏳ Retry ${retryCount}/${maxRetries} após ${delay}ms...`)
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
     }
   }
 
-  console.error("🚫 Falha após todas as tentativas:", lastError)
   throw lastError
 }
 
@@ -219,9 +180,6 @@ const isMarketHours = (): { isOpen: boolean; session: "noturna" | "diurna" | "fe
 
 export function useMarketData() {
   const [lastSuccessfulData, setLastSuccessfulData] = useState<MarketResponse | null>(null)
-  const [pendingData, setPendingData] = useState<MarketResponse | null>(null)
-  const debouncedPendingData = useDebounce(pendingData, 1500) // Aumentar debounce para reduzir blinks visuais
-  const updateInProgressRef = useRef(false)
   const [marketStatus, setMarketStatus] = useState<{
     status: "open" | "closed" | "weekend"
     session: "noturna" | "diurna" | "fechado"
@@ -278,10 +236,10 @@ export function useMarketData() {
       const isVisible = !document.hidden
       setIsPageVisible(isVisible)
 
-      // Forçar atualização quando a página ficar visível
-      if (isVisible) {
-        setForceUpdate((prev) => prev + 1)
-      }
+      // Não forçar atualização imediata - deixar SWR gerenciar
+      // if (isVisible) {
+      //   setForceUpdate((prev) => prev + 1)
+      // }
     }
 
     document.addEventListener("visibilitychange", handleVisibilityChange)
@@ -290,11 +248,11 @@ export function useMarketData() {
     }
   }, [])
 
-  // Manter força de atualização a cada 2 minutos para garantir dados frescos
+  // Manter força de atualização a cada 5 minutos (menos agressivo)
   useEffect(() => {
     const interval = setInterval(() => {
       setForceUpdate((prev) => prev + 1)
-    }, 120000) // Forçar atualização a cada 2 minutos
+    }, 300000) // Forçar atualização a cada 5 minutos (reduzido de 2min)
 
     return () => clearInterval(interval)
   }, [])
@@ -306,59 +264,26 @@ export function useMarketData() {
     {
       refreshInterval: FETCH_INTERVAL, // Usar intervalo fixo para evitar problemas
       dedupingInterval: 5000, // 5 segundos
-      revalidateOnFocus: true,
+      revalidateOnFocus: false, // Desabilitar para evitar loading chato ao trocar de aba
       revalidateOnReconnect: true,
-      revalidateIfStale: true,
-      // Modificar a função onSuccess para fazer uma transição suave dos dados
+      revalidateIfStale: false, // Reduzir agressividade das atualizações
       onSuccess: (newData) => {
         if (newData && newData.data) {
-          // Em vez de atualizar diretamente, definir como dados pendentes
-          setPendingData(newData.data)
-          setConsecutiveErrors(0) // Resetar contador de erros
+          setLastSuccessfulData(newData.data)
+          setInitialDataFetched(true)
+          setConsecutiveErrors(0)
         }
       },
       onError: (err) => {
-        console.error("Erro detalhado ao buscar dados:", {
-          message: err.message,
-          status: err.status,
-          info: err.info,
-          timestamp: new Date().toISOString()
-        })
-        setConsecutiveErrors((prev) => prev + 1) // Incrementar contador de erros
+        console.error("Erro ao buscar dados:", err.message)
+        setConsecutiveErrors((prev) => prev + 1)
       },
     },
   )
 
-  // Processar dados pendentes com proteção contra scroll jumps
-  useEffect(() => {
-    if (debouncedPendingData && !updateInProgressRef.current) {
-      updateInProgressRef.current = true
-      
-      // Use requestIdleCallback if available, otherwise fallback to setTimeout
-      const scheduleUpdate = (callback: () => void) => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(callback, { timeout: 100 })
-        } else {
-          setTimeout(callback, 0)
-        }
-      }
-
-      scheduleUpdate(() => {
-        // Only update if data has actually changed
-        const hasDataChanged = JSON.stringify(lastSuccessfulData) !== JSON.stringify(debouncedPendingData)
-        
-        if (hasDataChanged) {
-          setLastSuccessfulData(debouncedPendingData)
-          setInitialDataFetched(true)
-        }
-        
-        updateInProgressRef.current = false
-      })
-    }
-  }, [debouncedPendingData, lastSuccessfulData])
+  // Dados já são atualizados diretamente no onSuccess - sem debounce necessário
 
   const refresh = useCallback(() => {
-    console.log("Forçando atualização dos dados...")
     setForceUpdate((prev) => prev + 1)
     return mutate()
   }, [mutate])
