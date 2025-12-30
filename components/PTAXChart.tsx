@@ -139,7 +139,7 @@ export function PTAXChart() {
                   contentStyle={{ backgroundColor: "#1A1A1A", border: "1px solid #333" }}
                   labelStyle={{ color: "#00ff00" }}
                   itemStyle={{ color: "#fff" }}
-                  formatter={(value: number) => [value.toFixed(4), "PTAX"]}
+                  formatter={(value) => [typeof value === 'number' ? value.toFixed(4) : '0.0000', "PTAX"]}
                   labelFormatter={(label: string) => `Data: ${new Date(label).toLocaleDateString("pt-BR")}`}
                 />
                 {maxPtax && (
