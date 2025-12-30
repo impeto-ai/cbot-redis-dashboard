@@ -3,17 +3,15 @@ const nextConfig = {
   // Desabilitar cache estático para todas as páginas
   reactStrictMode: true,
 
-  // Suporte a Web Workers
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.output.publicPath = `/_next/`
-    }
-    return config
-  },
-
-  // Configurar imagens permitidas
+  // Configurar imagens permitidas (usando remotePatterns para Next.js 16+)
   images: {
-    domains: ['gwakkxqrbqiezvrsnzhb.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'gwakkxqrbqiezvrsnzhb.supabase.co',
+        pathname: '/**',
+      },
+    ],
     unoptimized: true,
   },
 
