@@ -32,21 +32,22 @@ export const ExchangeRates = React.memo(function ExchangeRates({ data }: Exchang
   const parseExchangeData = (rawData: any): ExchangeRate | null => {
     if (!rawData) return null
 
-    // Handle the nested structure - the data is nested under a key with the same name as the symbol
-    if (typeof rawData === "object" && !Array.isArray(rawData)) {
-      // Get the first key in the object (should be the symbol name)
-      const innerKey = Object.keys(rawData)[0]
-      if (innerKey) {
-        rawData = rawData[innerKey]
-      }
-    }
-
     // If the data is a string, try to parse it
     if (typeof rawData === "string") {
       try {
         rawData = JSON.parse(rawData)
       } catch (e) {
         return null
+      }
+    }
+
+    // Handle the nested structure - but only if arrValues is NOT present at the top level
+    // Some data comes nested under a key with the symbol name, others come directly
+    if (typeof rawData === "object" && !Array.isArray(rawData) && !rawData.arrValues) {
+      // Get the first key in the object (should be the symbol name)
+      const innerKey = Object.keys(rawData)[0]
+      if (innerKey && rawData[innerKey]?.arrValues) {
+        rawData = rawData[innerKey]
       }
     }
 
