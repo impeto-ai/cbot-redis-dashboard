@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { ClientHeader } from "@/components/ClientHeader"
 import { HydrationFix } from "@/components/HydrationFix"
 import ErrorBoundary from "@/components/ErrorBoundary"
+import { MaintenanceBanner } from "@/components/MaintenanceBanner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,6 +29,7 @@ export default function RootLayout({
         <HydrationFix />
         <ErrorBoundary>
           <ClientHeader />
+          <MaintenanceBanner />
           {children}
         </ErrorBoundary>
       </body>
