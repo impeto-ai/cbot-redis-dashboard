@@ -29,8 +29,8 @@ export function parseB3Data(data: any): ParsedMarketData {
   // Verificar se os dados estão aninhados sob uma chave
   if (data && typeof data === "object") {
     const keys = Object.keys(data)
-    // Se temos apenas uma chave e ela parece ser um símbolo da B3
-    if (keys.length === 1 && keys[0].includes("CCM")) {
+    // Se temos apenas uma chave e ela parece ser um símbolo da B3 (CCM, BGI, etc.)
+    if (keys.length === 1 && (keys[0].includes("CCM") || keys[0].includes("BGI"))) {
       data = data[keys[0]]
     }
   }

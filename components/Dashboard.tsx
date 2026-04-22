@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [parsedWheatData, setParsedWheatData] = useState<ParsedMarketData[]>([])
   // Adicione o estado para os dados da B3
   const [parsedB3Data, setParsedB3Data] = useState<ParsedMarketData[]>([])
+  const [parsedBgiData, setParsedBgiData] = useState<ParsedMarketData[]>([])
   // Adicione "bmf" na lista de tabelas visíveis por padrão
   const [visibleTables, setVisibleTables] = useState<string[]>(["soybean", "corn", "meal", "oil", "bmf", "dollar"])
   const [tableLayout, setTableLayout] = useState<"horizontal" | "vertical">("vertical")
@@ -50,6 +51,7 @@ export default function Dashboard() {
   const deferredMealData = useDeferredValue(parsedMealData)
   const deferredOilData = useDeferredValue(parsedOilData)
   const deferredB3Data = useDeferredValue(parsedB3Data)
+  const deferredBgiData = useDeferredValue(parsedBgiData)
   const deferredCurvaData = useDeferredValue(parsedCurvaData)
   
   // Usar dados estáveis da curva para evitar re-renders do modal
@@ -67,6 +69,7 @@ export default function Dashboard() {
         mealData: [],
         oilData: [],
         b3Data: [],
+        bgiData: [],
         curvaData: [],
       }
 
@@ -77,6 +80,7 @@ export default function Dashboard() {
     const mealData = []
     const oilData = []
     const b3Data = []
+    const bgiData = []
     const curvaData = []
 
     try {
@@ -140,12 +144,16 @@ export default function Dashboard() {
         }
       }
 
-      // Process B3 data
+      // Process B3 data — segrega BGI (Boi Gordo) do milho (CCM)
       for (const key in marketData) {
         if (key.includes("b3:")) {
           try {
             const parsed = parseB3Data(marketData[key])
-            b3Data.push(parsed)
+            if (key.includes("BGI") || parsed.symbol?.includes("BGI")) {
+              bgiData.push(parsed)
+            } else {
+              b3Data.push(parsed)
+            }
           } catch (error) {
             console.error(`Error parsing B3 data for key ${key}:`, error)
           }
@@ -174,6 +182,7 @@ export default function Dashboard() {
       mealData: mealData.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
       oilData: oilData.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
       b3Data: b3Data.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
+      bgiData: bgiData.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
       curvaData,
     }
   }, [marketData])
@@ -203,6 +212,7 @@ export default function Dashboard() {
         setParsedMealData(processedData.mealData)
         setParsedOilData(processedData.oilData)
         setParsedB3Data(processedData.b3Data)
+        setParsedBgiData(processedData.bgiData)
         setParsedCurvaData(processedData.curvaData)
       }
     }
@@ -359,6 +369,18 @@ export default function Dashboard() {
                       <CBOTDataTables data={deferredB3Data} title="MILHO BM&F" />
                     ) : (
                       <TableSkeleton rows={6} title="MILHO BM&F" type="cbot" />
+                    )}
+                  </>
+                )}
+
+                {/* Tabela Boi Gordo BM&F */}
+                {visibleTables.includes("bmf") && (
+                  <>
+                    <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 mt-6">BOI GORDO BM&F</h2>
+                    {deferredBgiData.length > 0 ? (
+                      <CBOTDataTables data={deferredBgiData} title="BOI GORDO BM&F" />
+                    ) : (
+                      <TableSkeleton rows={6} title="BOI GORDO BM&F" type="cbot" />
                     )}
                   </>
                 )}
