@@ -1,12 +1,37 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Info } from "lucide-react"
 import type { EndOfMonthRow } from "@/utils/buildEndOfMonthCurve"
 import { useSmoothValue } from "@/hooks/useSmoothTransition"
-import { useValueFlash } from "@/hooks/useValueFlash"
 import { TableSkeleton } from "@/components/TableSkeleton"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+
+type FlashType = "positive" | "negative" | "price"
+
+// Inline porque o hook useValueFlash compartilhado nao esta no repo ainda.
+function useFlashClass(value: number | null, type: FlashType = "price") {
+  const [flashing, setFlashing] = useState(false)
+  const prev = useRef<number | null>(value)
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => {
+    if (timer.current) clearTimeout(timer.current)
+    if (value !== null && prev.current !== null && value !== prev.current) {
+      setFlashing(true)
+      timer.current = setTimeout(() => setFlashing(false), 800)
+    }
+    prev.current = value
+    return () => {
+      if (timer.current) clearTimeout(timer.current)
+    }
+  }, [value])
+
+  if (!flashing) return ""
+  if (type === "positive") return "cell-flash-positive"
+  if (type === "negative") return "cell-flash-negative"
+  return "cell-flash-price"
+}
 
 interface EndOfMonthCurveTableProps {
   data: EndOfMonthRow[]
@@ -29,7 +54,7 @@ const SmoothNumberCell = React.memo(
     decimals?: number
   }) => {
     const smoothValue = useSmoothValue(value, { duration: 600 })
-    const flashClass = useValueFlash(value, flashType)
+    const flashClass = useFlashClass(value, flashType)
 
     const formatted =
       smoothValue === null || smoothValue === undefined ? "-" : smoothValue.toFixed(decimals)
@@ -105,8 +130,8 @@ export const EndOfMonthCurveTable = React.memo(function EndOfMonthCurveTable({
                 </p>
                 <ul className="list-disc pl-4 text-gray-300 space-y-1">
                   <li>
-                    <strong>Spot ({spotLabel})</strong> como ancora D+0 — fonte preferida: PTAX do
-                    Banco Central; fallback para DOL COM do Redis.
+                    <strong>Spot ({spotLabel})</strong> como ancora D+0 — dolar pronto em tempo real
+                    do Redis (<code>cambio:DOL COM</code>).
                   </li>
                   <li>
                     <strong>Curva do dolar BM&amp;F</strong> em pontos fixos (7D, 30D, 60D, ..., 600D).

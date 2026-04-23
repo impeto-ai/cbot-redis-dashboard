@@ -4,8 +4,8 @@ import { extractDaysFromCurva } from "@/utils/dateUtils"
 export type SpotSource = "ptax" | "dolcom"
 
 // Fonte do spot usado como ancora (D+0) na interpolacao.
-// Trocar para "dolcom" se o time solicitar usar o dolar pronto (cambio:DOL COM).
-export const SPOT_SOURCE: SpotSource = "ptax"
+// "dolcom" = dolar pronto do Redis (cambio:DOL COM). "ptax" = PTAX do Redis (se existir).
+export const SPOT_SOURCE: SpotSource = "dolcom"
 
 export interface EndOfMonthRow {
   date: string

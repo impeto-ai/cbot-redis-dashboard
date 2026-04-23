@@ -29,13 +29,11 @@ import {
   type SpotSource,
 } from "@/utils/buildEndOfMonthCurve"
 import { EndOfMonthCurveTable } from "@/components/EndOfMonthCurveTable"
-import { usePTAXSpot } from "@/hooks/usePTAXSpot"
 
 export default function Dashboard() {
   const { data: marketData, error, isLoading, initialDataFetched, marketStatus, isPageVisible } = useMarketData()
   const { preserveScroll, isUserScrolling } = useScrollPreservation()
   const modalControls = useModalState()
-  const { ptaxValue } = usePTAXSpot()
 
   const [parsedSoybeanData, setParsedSoybeanData] = useState<ParsedMarketData[]>([])
   const [parsedCornData, setParsedCornData] = useState<ParsedMarketData[]>([])
@@ -194,18 +192,7 @@ export default function Dashboard() {
       console.error("Error processing market data:", error)
     }
 
-    // Spot: prioriza PTAX do Banco Central (API externa via usePTAXSpot).
-    // Fallback para DOL COM do Redis quando PTAX nao disponivel ou se SPOT_SOURCE="dolcom".
-    let spot: number | null = null
-    let resolvedSpotSource: SpotSource | null = null
-    if (SPOT_SOURCE === "ptax" && ptaxValue !== null && !Number.isNaN(ptaxValue)) {
-      spot = ptaxValue
-      resolvedSpotSource = "ptax"
-    } else {
-      const fallback = extractSpot(marketData, "dolcom")
-      spot = fallback.value
-      resolvedSpotSource = fallback.source
-    }
+    const { value: spot, source: resolvedSpotSource } = extractSpot(marketData, SPOT_SOURCE)
     const endOfMonthCurveRows = buildEndOfMonthCurve(curvaData, spot)
 
     return {
@@ -221,7 +208,7 @@ export default function Dashboard() {
       spot,
       spotSource: resolvedSpotSource,
     }
-  }, [marketData, ptaxValue])
+  }, [marketData])
 
   // Substituir o useEffect de processamento de dados pelo useMemo acima
   // Remover o useEffect que começa com:
