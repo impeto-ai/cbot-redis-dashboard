@@ -18,6 +18,7 @@ const AVAILABLE_TABLES = [
   { id: "wheat", label: "Trigo CBOT" },
   { id: "bmf", label: "BM&F" },
   { id: "dollar", label: "Curva Dólar" },
+  { id: "fimMes", label: "Curva Fim de Mês" },
 ]
 
 export function TableFilter({ onChange, onLayoutChange }: TableFilterProps) {

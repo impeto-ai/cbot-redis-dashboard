@@ -21,11 +21,21 @@ import { CBOTDataTables } from "@/components/CBOTDataTables"
 import { FinancialCalculatorModal } from "@/components/FinancialCalculatorModal"
 import { TableSkeleton } from "@/components/TableSkeleton"
 import type { ParsedMarketData, ParsedCurvaData } from "@/types/market-data"
+import {
+  buildEndOfMonthCurve,
+  extractSpot,
+  SPOT_SOURCE,
+  type EndOfMonthRow,
+  type SpotSource,
+} from "@/utils/buildEndOfMonthCurve"
+import { EndOfMonthCurveTable } from "@/components/EndOfMonthCurveTable"
+import { usePTAXSpot } from "@/hooks/usePTAXSpot"
 
 export default function Dashboard() {
   const { data: marketData, error, isLoading, initialDataFetched, marketStatus, isPageVisible } = useMarketData()
   const { preserveScroll, isUserScrolling } = useScrollPreservation()
   const modalControls = useModalState()
+  const { ptaxValue } = usePTAXSpot()
 
   const [parsedSoybeanData, setParsedSoybeanData] = useState<ParsedMarketData[]>([])
   const [parsedCornData, setParsedCornData] = useState<ParsedMarketData[]>([])
@@ -36,8 +46,11 @@ export default function Dashboard() {
   // Adicione o estado para os dados da B3
   const [parsedB3Data, setParsedB3Data] = useState<ParsedMarketData[]>([])
   const [parsedBgiData, setParsedBgiData] = useState<ParsedMarketData[]>([])
+  const [endOfMonthCurve, setEndOfMonthCurve] = useState<EndOfMonthRow[]>([])
+  const [spotRate, setSpotRate] = useState<number | null>(null)
+  const [spotSource, setSpotSource] = useState<SpotSource | null>(null)
   // Adicione "bmf" na lista de tabelas visíveis por padrão
-  const [visibleTables, setVisibleTables] = useState<string[]>(["soybean", "corn", "meal", "oil", "bmf", "dollar"])
+  const [visibleTables, setVisibleTables] = useState<string[]>(["soybean", "corn", "meal", "oil", "bmf", "dollar", "fimMes"])
   const [tableLayout, setTableLayout] = useState<"horizontal" | "vertical">("vertical")
 
   // Usar refs para manter referência aos dados anteriores
@@ -53,6 +66,9 @@ export default function Dashboard() {
   const deferredB3Data = useDeferredValue(parsedB3Data)
   const deferredBgiData = useDeferredValue(parsedBgiData)
   const deferredCurvaData = useDeferredValue(parsedCurvaData)
+  const deferredEndOfMonthCurve = useDeferredValue(endOfMonthCurve)
+  const deferredSpotRate = useDeferredValue(spotRate)
+  const deferredSpotSource = useDeferredValue(spotSource)
   
   // Usar dados estáveis da curva para evitar re-renders do modal
   const stableCurvaData = useStableCurvaData(deferredCurvaData)
@@ -71,6 +87,9 @@ export default function Dashboard() {
         b3Data: [],
         bgiData: [],
         curvaData: [],
+        endOfMonthCurve: [] as EndOfMonthRow[],
+        spot: null as number | null,
+        spotSource: null as SpotSource | null,
       }
 
     // Processar os dados apenas quando marketData mudar
@@ -175,6 +194,20 @@ export default function Dashboard() {
       console.error("Error processing market data:", error)
     }
 
+    // Spot: prioriza PTAX do Banco Central (API externa via usePTAXSpot).
+    // Fallback para DOL COM do Redis quando PTAX nao disponivel ou se SPOT_SOURCE="dolcom".
+    let spot: number | null = null
+    let resolvedSpotSource: SpotSource | null = null
+    if (SPOT_SOURCE === "ptax" && ptaxValue !== null && !Number.isNaN(ptaxValue)) {
+      spot = ptaxValue
+      resolvedSpotSource = "ptax"
+    } else {
+      const fallback = extractSpot(marketData, "dolcom")
+      spot = fallback.value
+      resolvedSpotSource = fallback.source
+    }
+    const endOfMonthCurveRows = buildEndOfMonthCurve(curvaData, spot)
+
     return {
       soybeanData: soybeanData.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
       cornData: cornData.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
@@ -184,8 +217,11 @@ export default function Dashboard() {
       b3Data: b3Data.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
       bgiData: bgiData.filter(item => item.diasAteVencimento >= 0).sort((a, b) => a.diasAteVencimento - b.diasAteVencimento),
       curvaData,
+      endOfMonthCurve: endOfMonthCurveRows,
+      spot,
+      spotSource: resolvedSpotSource,
     }
-  }, [marketData])
+  }, [marketData, ptaxValue])
 
   // Substituir o useEffect de processamento de dados pelo useMemo acima
   // Remover o useEffect que começa com:
@@ -217,6 +253,15 @@ export default function Dashboard() {
       }
     }
   }, [processedData, isUserScrolling, parsedSoybeanData, parsedCornData, parsedB3Data])
+
+  // Tabela Curva Fim de Mês nao participa do scroll-preservation: atualiza sempre que processedData muda.
+  useEffect(() => {
+    if (processedData) {
+      setEndOfMonthCurve(processedData.endOfMonthCurve)
+      setSpotRate(processedData.spot)
+      setSpotSource(processedData.spotSource)
+    }
+  }, [processedData])
 
   useEffect(() => {
     const timeoutId = setTimeout(updateDataWithScrollPreservation, 100)
@@ -408,6 +453,21 @@ export default function Dashboard() {
                   ) : (
                     <TableSkeleton rows={15} title="CURVA DE DÓLAR" type="curva" />
                   )
+                )}
+
+                {/* Tabela Curva Fim de Mês — projeções interpoladas a partir da curva + PTAX */}
+                {visibleTables.includes("fimMes") && (
+                  <div className="mt-6">
+                    <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4">
+                      Curva Fim de Mês
+                    </h2>
+                    <EndOfMonthCurveTable
+                      data={deferredEndOfMonthCurve}
+                      spot={deferredSpotRate}
+                      spotLabel={deferredSpotSource === "ptax" ? "PTAX" : "DOL COM"}
+                      title="CURVA FIM DE MÊS"
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>
