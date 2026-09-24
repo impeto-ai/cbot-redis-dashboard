@@ -105,6 +105,44 @@ async function fetchFromUpstash(endpoint: string, options: RequestInit = {}): Pr
 }
 
 // Função para buscar todas as chaves relevantes
+/**
+ * Normaliza um valor vindo da base do go-cbot (produção) para o formato
+ * legado que os parsers do dashboard esperam ({ symbolId, arrValues, lastUpdate }).
+ *
+ * go-cbot grava domain.Quote: { symbol, sourceId, price, bid, ask, high, low,
+ * open, change, changePerc, volume, lastUpdate, values:{<códigoCMA>:valor} }.
+ * O n8n gravava o quote CRU da CMA: { symbolId, arrValues:[{código:valor}] }.
+ *
+ * Regra: preserva TODO código CMA que o go-cbot ecoa em `values` (autoridade
+ * do vendor) e só PREENCHE as lacunas com os campos já parseados — em especial
+ * o "03" (taxa), que o go-cbot não repete no `values` da curva de dólar.
+ */
+export function normalizeQuoteShape(v: any): any {
+  if (!v || typeof v !== "object") return v
+  if (Array.isArray(v.arrValues)) return v // já é o formato legado (n8n)
+  if (!v.values && v.price === undefined) return v // formato desconhecido, não mexe
+
+  const codes: Record<string, string> = { ...(v.values || {}) }
+  const str = (x: any) => (x === undefined || x === null ? undefined : String(x))
+  const fill = (code: string, val: any) => {
+    if (val !== undefined && !(code in codes)) codes[code] = val
+  }
+  // taxa / último: parsers leem "10" (cbot/b3/câmbio) ou "03" (curva)
+  fill("10", str(v.price)); fill("03", str(v.price))
+  fill("14", str(v.bid)); fill("15", str(v.ask))
+  fill("16", str(v.high)); fill("17", str(v.low)); fill("18", str(v.open))
+  fill("19", str(v.volume)); fill("26", str(v.change))
+  fill("01", str(v.changePerc !== undefined ? v.changePerc : v.change))
+
+  const arrValues = Object.entries(codes).map(([k, val]) => ({ [k]: String(val) }))
+  return {
+    ...v,
+    symbolId: v.symbolId || { sourceId: v.sourceId, symbol: v.symbol },
+    arrValues,
+    lastUpdate: v.lastUpdate || new Date().toISOString(),
+  }
+}
+
 export async function getAllKeys(): Promise<string[]> {
   const cacheKey = "all_keys"
   const cachedItem = cache[cacheKey]
@@ -137,8 +175,19 @@ export async function getAllKeys(): Promise<string[]> {
     // Log all keys before filtering
     console.log("All Redis keys before filtering:", keys)
     const filteredKeys = keys.filter((key: string) => {
+      // A base do go-cbot também tem candles:* (streams), optionchain:*,
+      // discovery:*, news*, sources:* etc. — que NÃO são quotes planos e
+      // fariam os parsers estourarem. Excluir esses prefixos.
+      const isJunk =
+        key.startsWith("candles:") ||
+        key.startsWith("optionchain:") ||
+        key.startsWith("discovery:") ||
+        key.startsWith("sources:") ||
+        key.startsWith("flow_") ||
+        key.startsWith("news")
       const isRelevant =
-        key.includes("ZS") ||
+        !isJunk &&
+        (key.includes("ZS") ||
         key.includes("ZC") ||
         key.includes("ZW") || // Add ZW (trigo)
         key.includes("ZM") || // Add ZM (farelo)
@@ -147,7 +196,7 @@ export async function getAllKeys(): Promise<string[]> {
         key.includes("PTAX") ||
         key.includes("cambio:DOL COM") ||
         key.includes("cambio:EUROCOM") ||
-        key.includes("b3:") // Adicionar chaves da B3
+        key.includes("b3:")) // Adicionar chaves da B3
 
       if (isRelevant) {
         console.log("Found relevant key:", key)
@@ -308,7 +357,7 @@ async function getAllValuesInternal(): Promise<Record<string, any>> {
           // Se o valor for uma string que parece JSON, tentar converter
           if (typeof value === "string" && (value.startsWith("{") || value.startsWith("["))) {
             try {
-              value = JSON.parse(value)
+              value = normalizeQuoteShape(JSON.parse(value))
             } catch (e) {
               // Manter como string se não for possível converter
             }
@@ -360,7 +409,7 @@ async function getAllValuesInternal(): Promise<Record<string, any>> {
           // Se o valor for uma string que parece JSON, tentar converter
           if (typeof value === "string" && (value.startsWith("{") || value.startsWith("["))) {
             try {
-              value = JSON.parse(value)
+              value = normalizeQuoteShape(JSON.parse(value))
             } catch (e) {
               // Manter como string se não for possível converter
             }
