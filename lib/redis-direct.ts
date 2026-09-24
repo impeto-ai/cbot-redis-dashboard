@@ -161,16 +161,24 @@ export async function getAllKeys(): Promise<string[]> {
   try {
     console.log("Buscando todas as chaves...")
 
-    // Fazer uma única requisição para buscar todas as chaves
-    const result = await fetchFromUpstash("keys/*")
-
-    // Extrair o resultado da resposta
-    let keys = []
-    if (result && result.result && Array.isArray(result.result)) {
-      keys = result.result
-    } else if (Array.isArray(result)) {
-      keys = result
+    // Buscar por PREFIXO, não `keys/*`. A base de produção do go-cbot tem
+    // ~17k chaves (candles:*, optionchain:* etc.) e o Upstash REJEITA um
+    // `KEYS *` global: `ERR too many keys to fetch, please use SCAN`. Um
+    // `KEYS <prefixo>*` por família fica muito abaixo do limite e traz só as
+    // chaves de quote que o painel consome — nas duas bases (n8n e go-cbot
+    // usam os mesmos prefixos cbot:/b3:/dolar:/cambio:).
+    const quotePrefixes = ["cbot:", "b3:", "dolar:", "cambio:"]
+    const collected: string[] = []
+    for (const prefix of quotePrefixes) {
+      try {
+        const result = await fetchFromUpstash(`keys/${encodeURIComponent(prefix + "*")}`)
+        const part = result && Array.isArray(result.result) ? result.result : Array.isArray(result) ? result : []
+        collected.push(...part)
+      } catch (e) {
+        console.error(`Erro ao buscar chaves do prefixo ${prefix}:`, e)
+      }
     }
+    const keys = collected
 
     // Log all keys before filtering
     console.log("All Redis keys before filtering:", keys)
