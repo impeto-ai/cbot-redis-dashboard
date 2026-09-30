@@ -151,121 +151,92 @@ html {
   animation: flashYellow 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ===== PULSE CONTÍNUO PARA VALORES VIVOS ===== */
+/* ===== FLASH DE MUDANÇA - FEEDBACK VISUAL FORTE ===== */
 
-/* ===== PULSE SUPER VISÍVEL E FORTE ===== */
-
-/* Pulse VERDE - SUPER AGRESSIVO */
-@keyframes pulseGreenAlive {
+/* Flash VERDE - quando valor aumenta */
+@keyframes flashGreen {
   0% {
-    transform: scale(1);
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8),
-                 0 0 20px rgba(0, 255, 0, 0.6),
-                 0 0 30px rgba(0, 255, 0, 0.4);
-    opacity: 1;
+    background: rgba(0, 255, 0, 0.4);
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.8),
+                0 0 30px rgba(0, 255, 0, 0.5);
   }
   50% {
-    transform: scale(1.1);
-    text-shadow: 0 0 20px rgba(0, 255, 0, 1),
-                 0 0 40px rgba(0, 255, 0, 0.8),
-                 0 0 60px rgba(0, 255, 0, 0.6);
-    opacity: 0.85;
+    background: rgba(0, 255, 0, 0.6);
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 1),
+                0 0 40px rgba(0, 255, 0, 0.7);
   }
   100% {
+    background: transparent;
     transform: scale(1);
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8),
-                 0 0 20px rgba(0, 255, 0, 0.6),
-                 0 0 30px rgba(0, 255, 0, 0.4);
-    opacity: 1;
+    box-shadow: none;
   }
 }
 
-/* Pulse VERMELHO - SUPER AGRESSIVO */
-@keyframes pulseRedAlive {
+/* Flash VERMELHO - quando valor diminui */
+@keyframes flashRed {
   0% {
-    transform: scale(1);
-    text-shadow: 0 0 10px rgba(255, 68, 68, 0.8),
-                 0 0 20px rgba(255, 68, 68, 0.6),
-                 0 0 30px rgba(255, 68, 68, 0.4);
-    opacity: 1;
+    background: rgba(255, 68, 68, 0.4);
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.8),
+                0 0 30px rgba(255, 68, 68, 0.5);
   }
   50% {
-    transform: scale(1.1);
-    text-shadow: 0 0 20px rgba(255, 68, 68, 1),
-                 0 0 40px rgba(255, 68, 68, 0.8),
-                 0 0 60px rgba(255, 68, 68, 0.6);
-    opacity: 0.85;
+    background: rgba(255, 68, 68, 0.6);
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(255, 68, 68, 1),
+                0 0 40px rgba(255, 68, 68, 0.7);
   }
   100% {
+    background: transparent;
     transform: scale(1);
-    text-shadow: 0 0 10px rgba(255, 68, 68, 0.8),
-                 0 0 20px rgba(255, 68, 68, 0.6),
-                 0 0 30px rgba(255, 68, 68, 0.4);
-    opacity: 1;
+    box-shadow: none;
   }
 }
 
-/* Pulse AMARELO - SUPER AGRESSIVO */
-@keyframes pulseYellowAlive {
+/* Flash AMARELO - quando preço muda */
+@keyframes flashYellowPrice {
   0% {
-    transform: scale(1);
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
-                 0 0 20px rgba(255, 215, 0, 0.6),
-                 0 0 30px rgba(255, 215, 0, 0.4);
-    opacity: 1;
+    background: rgba(255, 215, 0, 0.4);
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8),
+                0 0 30px rgba(255, 215, 0, 0.5);
   }
   50% {
-    transform: scale(1.1);
-    text-shadow: 0 0 20px rgba(255, 215, 0, 1),
-                 0 0 40px rgba(255, 215, 0, 0.8),
-                 0 0 60px rgba(255, 215, 0, 0.6);
-    opacity: 0.85;
+    background: rgba(255, 215, 0, 0.6);
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 1),
+                0 0 40px rgba(255, 215, 0, 0.7);
   }
   100% {
+    background: transparent;
     transform: scale(1);
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
-                 0 0 20px rgba(255, 215, 0, 0.6),
-                 0 0 30px rgba(255, 215, 0, 0.4);
-    opacity: 1;
+    box-shadow: none;
   }
 }
 
-/* Classes VIVAS - ANIMAÇÃO FORTE E CONSTANTE */
-.alive-positive {
-  animation: pulseGreenAlive 1.5s ease-in-out infinite !important;
+/* Classes para aplicar quando valor muda */
+.cell-flash-positive {
+  animation: flashGreen 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: inline-block !important;
-  will-change: transform, opacity, text-shadow;
-  background: rgba(0, 255, 0, 0.1) !important; /* TESTE VISUAL */
-  padding: 2px 4px !important;
-  border-radius: 3px !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
 }
 
-.alive-negative {
-  animation: pulseRedAlive 1.5s ease-in-out infinite !important;
+.cell-flash-negative {
+  animation: flashRed 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: inline-block !important;
-  will-change: transform, opacity, text-shadow;
-  background: rgba(255, 68, 68, 0.1) !important; /* TESTE VISUAL */
-  padding: 2px 4px !important;
-  border-radius: 3px !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
 }
 
-.alive-price {
-  animation: pulseYellowAlive 1.8s ease-in-out infinite !important;
+.cell-flash-price {
+  animation: flashYellowPrice 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: inline-block !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
   font-weight: bold !important;
-  will-change: transform, opacity, text-shadow;
-  background: rgba(255, 215, 0, 0.1) !important; /* TESTE VISUAL */
-  padding: 2px 4px !important;
-  border-radius: 3px !important;
-}
-
-.alive-neutral {
-  animation: pulseYellowAlive 2s ease-in-out infinite !important;
-  display: inline-block !important;
-  will-change: transform, opacity, text-shadow;
-  background: rgba(255, 215, 0, 0.05) !important; /* TESTE VISUAL */
-  padding: 2px 4px !important;
-  border-radius: 3px !important;
 }
 
 /* Highlight para linha inteira quando atualiza */

@@ -1,6 +1,7 @@
 import type { ParsedMarketData } from "@/types/market-data"
 import React from "react"
-import { useSmoothValue, useValueChangeEffect } from "@/hooks/useSmoothTransition"
+import { useSmoothValue } from "@/hooks/useSmoothTransition"
+import { useValueFlash } from "@/hooks/useValueFlash"
 import { NoSSR } from "@/components/NoSSR"
 import { TableSkeleton } from "@/components/TableSkeleton"
 
@@ -10,43 +11,25 @@ interface CBOTDataTablesProps {
   isLoading?: boolean
 }
 
-// Componente para célula de valor com transição suave E FLASH DE COR
+// Componente para célula de valor com transição suave E FLASH quando muda
 const SmoothValueCell = React.memo(
   ({
     value,
     className,
     formatter,
-    flashType = "none",
-    aliveType = "none",
+    flashType = "positive",
   }: {
     value: number | null
     className: string
     formatter: (v: number | null) => string
-    flashType?: "positive" | "negative" | "price" | "none"
-    aliveType?: "positive" | "negative" | "price" | "neutral" | "none"
+    flashType?: "positive" | "negative" | "price"
   }) => {
     const smoothValue = useSmoothValue(value, { duration: 600 })
-    const isChanging = useValueChangeEffect(value)
-
-    // Determinar classe de flash baseado no tipo e se está mudando
-    const flashClass = isChanging && flashType !== "none" ? `flash-${flashType}` : ""
-
-    // Classe alive para pulse constante
-    const aliveClass = aliveType !== "none" ? `alive-${aliveType}` : ""
+    const flashClass = useValueFlash(value, flashType)
 
     return (
       <td className={className}>
-        <span
-          className={`${isChanging ? "value-changing" : ""} ${flashClass} ${aliveClass}`}
-          style={{
-            display: 'inline-block',
-            animation: aliveType !== 'none' ? `${
-              aliveType === 'positive' ? 'pulseGreenAlive' :
-              aliveType === 'negative' ? 'pulseRedAlive' :
-              'pulseYellowAlive'
-            } 1.5s ease-in-out infinite` : 'none'
-          }}
-        >
+        <span className={flashClass}>
           {formatter(smoothValue)}
         </span>
       </td>
@@ -79,47 +62,38 @@ const SmoothTableRow = React.memo(
     const diffColor = isDiffPositive ? "text-[#00ff00] value-highlight" : "text-[#ff4444] value-highlight"
     const variationGlowClass = getVariationClass(item.variacao)
 
-    // Detectar mudanças para aplicar animação
-    const isChanging = useValueChangeEffect(
-      `${item.ultimoPreco}-${item.variacao}-${item.diff}`,
-      1200
-    )
-
     return (
       <tr
         key={item.symbol}
-        className={`border-b border-gray-800 table-row stable-layout ${isChanging ? "data-updated" : ""}`}
+        className="border-b border-gray-800 table-row stable-layout hover:bg-[#1a1f2e]"
       >
         <td className="px-2 py-1 text-left text-[#40c4ff] whitespace-nowrap data-cell symbol-glow">
           {item.symbol}
         </td>
         <td className="px-2 py-1 text-center text-white whitespace-nowrap data-cell">{item.vencimento}</td>
 
-        {/* Último preço com interpolação suave + FLASH AMARELO + PULSE CONSTANTE */}
+        {/* Último preço com flash amarelo quando muda */}
         <SmoothValueCell
           value={item.ultimoPreco}
           className="px-2 py-1 text-right text-yellow-400 whitespace-nowrap font-bold data-cell price-glow"
           formatter={formatNumber}
           flashType="price"
-          aliveType="price"
         />
 
-        {/* Variação com interpolação suave + FLASH VERDE/VERMELHO + PULSE CONSTANTE */}
+        {/* Variação com flash verde/vermelho quando muda */}
         <SmoothValueCell
           value={item.variacao}
           className={`px-2 py-1 text-right ${pctColor} ${variationGlowClass} data-cell whitespace-nowrap`}
           formatter={formatPercentage}
           flashType={isPctPositive ? "positive" : "negative"}
-          aliveType={isPctPositive ? "positive" : "negative"}
         />
 
-        {/* Diff com interpolação suave + FLASH VERDE/VERMELHO + PULSE CONSTANTE */}
+        {/* Diff com flash verde/vermelho quando muda */}
         <SmoothValueCell
           value={item.diff}
           className={`px-2 py-1 text-right ${diffColor} data-cell whitespace-nowrap`}
           formatter={formatNumber}
           flashType={isDiffPositive ? "positive" : "negative"}
-          aliveType={isDiffPositive ? "positive" : "negative"}
         />
 
         <td className="px-2 py-1 text-right text-white whitespace-nowrap hidden sm:table-cell data-cell">

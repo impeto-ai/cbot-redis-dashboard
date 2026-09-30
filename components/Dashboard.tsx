@@ -168,7 +168,7 @@ export default function Dashboard() {
             const parsed = parseB3Data(marketData[key])
             if (key.includes("BGI") || parsed.symbol?.includes("BGI")) {
               bgiData.push(parsed)
-            } else {
+            } else if (key.includes("CCM") || parsed.symbol?.includes("CCM")) {
               b3Data.push(parsed)
             }
           } catch (error) {
