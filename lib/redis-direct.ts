@@ -204,7 +204,10 @@ export async function getAllKeys(): Promise<string[]> {
         key.includes("PTAX") ||
         key.includes("cambio:DOL COM") ||
         key.includes("cambio:EUROCOM") ||
-        key.includes("b3:")) // Adicionar chaves da B3
+        // B3: só milho (CCM) e boi gordo (BGI). A base do go-cbot publica ~290
+        // chaves b3:* (DI1, DOL, WIN, IND, moedas…) que não têm tabela no painel.
+        key.startsWith("b3:CCM") ||
+        key.startsWith("b3:BGI"))
 
       if (isRelevant) {
         console.log("Found relevant key:", key)
