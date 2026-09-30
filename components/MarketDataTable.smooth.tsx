@@ -1,6 +1,7 @@
 import type { ParsedCurvaData } from "@/types/market-data"
 import React from "react"
-import { useSmoothValue, useValueChangeEffect } from "@/hooks/useSmoothTransition"
+import { useSmoothValue } from "@/hooks/useSmoothTransition"
+import { useValueFlash } from "@/hooks/useValueFlash"
 import { TableSkeleton } from "@/components/TableSkeleton"
 
 interface ParsedCurvaDataWithUpdate extends ParsedCurvaData {
@@ -14,42 +15,28 @@ interface MarketDataTableProps {
   isLoading?: boolean
 }
 
-// Componente para célula de taxa com transição suave E FLASH
+// Componente para célula de taxa com transição suave e flash quando muda
 const SmoothTaxaCell = React.memo(
   ({
     value,
     className,
-    flashType = "none",
-    aliveType = "none"
+    flashType,
   }: {
     value: number | null;
     className: string;
-    flashType?: "positive" | "negative" | "none"
-    aliveType?: "positive" | "negative" | "none"
+    flashType?: "positive" | "negative" | "price"
   }) => {
     const smoothValue = useSmoothValue(value, { duration: 600 })
-    const isChanging = useValueChangeEffect(value)
+    const flashClass = useValueFlash(value, flashType)
 
     const formatNumber = (val: number | null): string => {
       if (val === null) return "-"
       return val.toFixed(4)
     }
 
-    // Determinar classe de flash
-    const flashClass = isChanging && flashType !== "none" ? `flash-${flashType}` : ""
-    const aliveClass = aliveType !== "none" ? `alive-${aliveType}` : ""
-
     return (
       <td className={className}>
-        <span
-          className={`${isChanging ? "value-changing" : ""} ${flashClass} ${aliveClass}`}
-          style={{
-            display: 'inline-block',
-            animation: aliveType !== 'none' ? `${
-              aliveType === 'positive' ? 'pulseGreenAlive' : 'pulseRedAlive'
-            } 1.5s ease-in-out infinite` : 'none'
-          }}
-        >
+        <span className={flashClass}>
           {formatNumber(smoothValue)}
         </span>
       </td>
@@ -73,31 +60,26 @@ const SmoothTableRow = React.memo(
       return curva.replace(/CURVA\s*DE\s*DOLAR\s*/i, "").trim()
     }
 
-    const isChanging = useValueChangeEffect(`${item.taxa}-${item.var}`, 1200)
-
     return (
       <tr
         key={item.curva}
-        className={`border-b border-gray-800 hover:bg-[#1a1f2e] table-row stable-layout ${isChanging ? "data-updated" : ""}`}
+        className="border-b border-gray-800 hover:bg-[#1a1f2e] table-row stable-layout"
       >
         <td className="px-2 py-1 text-[#ffff00] whitespace-nowrap data-cell">
           {cleanCurvaText(item.curva)}
         </td>
 
-        {/* Taxa com interpolação suave - SEM flash */}
+        {/* Taxa com interpolação suave - sem flash */}
         <SmoothTaxaCell
           value={item.taxa}
           className="px-2 py-1 text-right text-white whitespace-nowrap data-cell"
-          flashType="none"
-          aliveType="none"
         />
 
-        {/* Var com interpolação suave + FLASH VERDE/VERMELHO + PULSE CONSTANTE */}
+        {/* Var com interpolação suave + flash verde/vermelho quando muda */}
         <SmoothTaxaCell
           value={item.var}
           className={`px-2 py-1 text-right ${item.var && item.var >= 0 ? "text-[#00ff00]" : "text-[#ff4444]"} data-cell whitespace-nowrap`}
           flashType={item.var && item.var >= 0 ? "positive" : "negative"}
-          aliveType={item.var && item.var >= 0 ? "positive" : "negative"}
         />
 
         <td className="px-2 py-1 text-center text-[#40c4ff] whitespace-nowrap data-cell">
