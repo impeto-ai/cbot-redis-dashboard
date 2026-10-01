@@ -63,6 +63,8 @@ export const ConnectionStatus = React.memo(function ConnectionStatus({ isLoading
         <div 
           className={`w-2 h-2 rounded-full ${getStatusColor()} ${isLoading ? 'animate-pulse' : ''}`}
         ></div>
+        {/* Fonte dos dados: base do Graindex (go-cbot, feed CMA) */}
+        {isInHeader && <span className="text-gray-400">Graindex ·</span>}
         <span>{getStatusText()}</span>
         {lastUpdate && !error && !isInHeader && (
           <span className="text-gray-400">
